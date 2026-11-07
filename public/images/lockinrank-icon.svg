@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 2048" fill="none">
+  <!-- Dark Slate Squircle Background -->
+  <rect width="2048" height="2048" rx="380" ry="380" fill="#354a4f"/>
+
+  <!-- Top-Left Cyan Bracket -->
+  <path d="M 472 472 H 1066 V 552 H 552 V 1066 H 472 Z" fill="#00fefe"/>
+
+  <!-- Bottom-Right Cyan Bracket -->
+  <path d="M 1576 1576 H 982 V 1496 H 1496 V 982 H 1576 Z" fill="#00fefe"/>
+
+  <!-- Center Emerald Growth Arrow -->
+  <path d="M 1024 697 H 1350 V 1023 H 1270 V 834 L 715 1389 L 658 1332 L 1213 777 H 1024 Z" fill="#0adb7f"/>
+
+  <!-- Bottom-Right Subtle Sparkle Accent -->
+  <path d="M 1808 1760 Q 1808 1808 1856 1808 Q 1808 1808 1808 1856 Q 1808 1808 1760 1808 Q 1808 1808 1808 1760 Z" fill="#737f82"/>
+</svg>

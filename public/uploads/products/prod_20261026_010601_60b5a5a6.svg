@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 56" fill="none">
+  <defs>
+    <linearGradient id="lockGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="rankGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="badgeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Icon Symbol: Padlock with Ascending Rank Bars -->
+  <g transform="translate(6, 4)">
+    <!-- Base Shield/Hex Background -->
+    <rect x="0" y="0" width="46" height="46" rx="12" fill="url(#lockGradient)" />
+    <!-- Padlock Shackle -->
+    <path d="M16 20V15C16 11.134 19.134 8 23 8C26.866 8 30 11.134 30 15V20" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.95" />
+    <!-- Lock Body Inner -->
+    <rect x="13" y="19" width="20" height="18" rx="4" fill="#ffffff" />
+    <!-- Keyhole / Target -->
+    <circle cx="23" cy="27" r="2.5" fill="#4f46e5" />
+    <path d="M23 28.5V33" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" />
+    <!-- Ascending Victory Bars on top right -->
+    <path d="M37 13L40 8M34 9L38 4" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" />
+  </g>
+
+  <!-- Typography: LOCKINRANK (Seamless, no space) -->
+  <text x="62" y="34" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="-0.5"><tspan fill="#0f172a">LOCKIN</tspan><tspan fill="url(#rankGradient)">RANK</tspan></text>
+
+  <!-- Badge: SHOP -->
+  <g transform="translate(214, 16)">
+    <rect x="0" y="0" width="48" height="20" rx="5" fill="url(#badgeGradient)" />
+    <text x="24" y="14" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="1" fill="#ffffff" text-anchor="middle">SHOP</text>
+  </g>
+</svg>

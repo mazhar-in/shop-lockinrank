@@ -1,0 +1,16 @@
+# Hostinger Apache / LiteSpeed URL Rewrite Configuration
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Security: Prevent directory listing
+Options -Indexes
+
+# Security: Protect sensitive files
+<FilesMatch "(^\.|\.(json|lock|sql|sqlite|db))$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

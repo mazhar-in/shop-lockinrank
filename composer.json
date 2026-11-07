@@ -1,0 +1,14 @@
+{
+    "name": "tpt/marketplace-prototype",
+    "description": "Ultra-lightweight Teachers Pay Teachers Clone Prototype using Flight PHP",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "flightphp/core": "^3.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}

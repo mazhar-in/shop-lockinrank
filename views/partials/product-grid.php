@@ -1,0 +1,86 @@
+<?php if (empty($products)): ?>
+    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <i class="fa-solid fa-folder-open" style="font-size: 3rem; color: #94a3b8; margin-bottom: 1rem;"></i>
+        <h4 style="color: #0f172a;">No matching teaching materials found</h4>
+        <p style="color: #64748b;">Try clearing some board/class filters or searching for different topics (e.g., Fractions, Phonics, Science).</p>
+    </div>
+<?php else: ?>
+    <?php foreach ($products as $p): ?>
+        <div class="product-card">
+            <div class="product-thumbnail-wrap">
+                <a href="/product/<?= htmlspecialchars($p['slug']) ?>">
+                    <img src="<?= htmlspecialchars($p['thumbnail_url']) ?>" alt="<?= htmlspecialchars($p['title']) ?>" loading="lazy">
+                </a>
+                <div class="badge-overlay">
+                    <span class="chip" style="background: #0284c7;"><?= htmlspecialchars($p['board'] ?? 'CBSE') ?></span>
+                    <span class="chip"><?= htmlspecialchars($p['grade']) ?></span>
+                    <?php if ($p['is_free']): ?>
+                        <span class="chip chip-free">FREEBIE</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="product-card-body">
+                <a href="/product/<?= htmlspecialchars($p['slug']) ?>" class="product-title">
+                    <?= htmlspecialchars($p['title']) ?>
+                </a>
+
+                <div class="product-author">
+                    <i class="fa-solid fa-circle-check" style="color: #0284c7; font-size: 0.85rem;"></i>
+                    <span style="color: #475569; font-weight: 500;">By <?= htmlspecialchars($p['store_name'] ?? 'Lockinrank Academic Team') ?></span>
+                </div>
+
+                <div class="rating-stars">
+                    <?php
+                    $fullStars = floor($p['rating']);
+                    for ($i = 0; $i < $fullStars; $i++): ?>
+                        <i class="fa-solid fa-star"></i>
+                    <?php endfor; ?>
+                    <strong style="color: #b45309;"><?= number_format($p['rating'], 1) ?></strong>
+                    <span class="rating-count">(<?= $p['review_count'] ?>)</span>
+
+                    <?php if (!empty($p['is_ink_friendly'])): ?>
+                        <span style="margin-left: auto; font-size: 0.72rem; color: #059669; font-weight: 700;" title="Printer Friendly / Black & White layout">
+                            <i class="fa-solid fa-print"></i> B&W Eco
+                        </span>
+                    <?php endif; ?>
+                </div>
+
+                <div class="product-card-footer">
+                    <div>
+                        <?php if ($p['is_free']): ?>
+                            <span class="product-price price-free">FREE</span>
+                        <?php else: ?>
+                            <span class="product-price">₹<?= number_format($p['price'], 0) ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div style="display: flex; gap: 0.4rem;">
+                        <!-- Quick Preview Modal Button (High Contrast) -->
+                        <button type="button" 
+                                class="btn-card-preview"
+                                hx-get="/product/preview/<?= $p['id'] ?>" 
+                                hx-target="#preview-modal-content"
+                                onclick="openPreviewModal()"
+                                title="Quick Watermarked Preview">
+                            <i class="fa-solid fa-eye"></i> Preview
+                        </button>
+
+                        <!-- Add to Cart Form (High Contrast) -->
+                        <form action="/cart/add" method="POST" style="margin-bottom: 0;" 
+                              hx-post="/cart/add" 
+                              hx-target="#nav-cart-btn" 
+                              hx-swap="outerHTML">
+                            <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
+                            <button type="submit" 
+                                    class="btn-card-cart"
+                                    title="Add to Cart">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+<?php endif; ?>

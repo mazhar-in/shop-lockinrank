@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 56" fill="none">
+  <defs>
+    <linearGradient id="rankGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="60%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#00bcd4" />
+    </linearGradient>
+    <linearGradient id="badgeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+  </defs>
+
+  <!-- Official Brand Mark (Vector conversion from uploaded logo) -->
+  <g transform="translate(6, 5) scale(0.0224609375)">
+    <!-- Dark Slate Squircle Background -->
+    <rect width="2048" height="2048" rx="380" ry="380" fill="#354a4f" />
+    <!-- Top-Left Cyan Bracket -->
+    <path d="M 472 472 H 1066 V 552 H 552 V 1066 H 472 Z" fill="#00fefe" />
+    <!-- Bottom-Right Cyan Bracket -->
+    <path d="M 1576 1576 H 982 V 1496 H 1496 V 982 H 1576 Z" fill="#00fefe" />
+    <!-- Center Emerald Growth Arrow -->
+    <path d="M 1024 697 H 1350 V 1023 H 1270 V 834 L 715 1389 L 658 1332 L 1213 777 H 1024 Z" fill="#0adb7f" />
+    <!-- Bottom-Right Sparkle Accent -->
+    <path d="M 1808 1760 Q 1808 1808 1856 1808 Q 1808 1808 1808 1856 Q 1808 1808 1760 1808 Q 1808 1808 1808 1760 Z" fill="#737f82" />
+  </g>
+
+  <!-- Typography: LOCKINRANK (Seamless, no space) -->
+  <text x="62" y="35" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="-0.5"><tspan fill="#0f172a">LOCKIN</tspan><tspan fill="url(#rankGradient)">RANK</tspan></text>
+
+  <!-- Badge: SHOP -->
+  <g transform="translate(214, 17)">
+    <rect x="0" y="0" width="48" height="20" rx="5" fill="url(#badgeGradient)" />
+    <text x="24" y="14" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="1" fill="#ffffff" text-anchor="middle">SHOP</text>
+  </g>
+</svg>

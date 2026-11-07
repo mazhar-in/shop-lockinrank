@@ -1,0 +1,13 @@
+# Composer dependencies
+vendor/
+
+# Temporary, OS & IDE files
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+.vscode/
+.idea/
+
+# Scratch dev files
+scratch/
