@@ -1,0 +1,19 @@
+# ==============================================================================
+# Hostinger Apache / LiteSpeed Web Server Configuration
+# Transparently routes all incoming traffic into the /public directory.
+# ==============================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Security: Block direct access to protected backend directories & files
+    RewriteRule ^(config|data|src|storage|vendor|views)(/|$) - [F,L,NC]
+    RewriteRule \.(db|sqlite|sql|lock|json|env|md)$ - [F,L,NC]
+
+    # Route all requests to public directory if not already inside public/
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Security: Disable directory browsing
+Options -Indexes

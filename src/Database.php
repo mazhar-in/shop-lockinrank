@@ -11,31 +11,42 @@ class Database
     public static function getConnection(): PDO
     {
         if (self::$pdo === null) {
-            $dbPath = __DIR__ . '/../data/tpt.db';
-            $isNew = !file_exists($dbPath);
+            $configPath = __DIR__ . '/../config/database.php';
+            $config = file_exists($configPath) ? require $configPath : ['default' => 'sqlite'];
 
-            self::$pdo = new PDO("sqlite:" . $dbPath);
-            self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
-            if ($isNew) {
-                self::migrateAndSeed(self::$pdo);
+            if (($config['default'] ?? 'sqlite') === 'mysql' && !empty($config['mysql']['database'])) {
+                $m = $config['mysql'];
+                $dsn = "mysql:host={$m['host']};port={$m['port']};dbname={$m['database']};charset={$m['charset']}";
+                self::$pdo = new PDO($dsn, $m['username'], $m['password']);
+                self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             } else {
-                try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_order_id TEXT"); } catch (\Throwable $e) {}
-                try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_payment_id TEXT"); } catch (\Throwable $e) {}
-                try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_signature TEXT"); } catch (\Throwable $e) {}
-                try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'pending'"); } catch (\Throwable $e) {}
-                try { self::$pdo->exec("ALTER TABLE products ADD COLUMN sample_downloads INTEGER DEFAULT 0"); } catch (\Throwable $e) {}
-                try { self::$pdo->exec("ALTER TABLE products ADD COLUMN material_file_path TEXT"); } catch (\Throwable $e) {}
-                try { self::$pdo->exec("ALTER TABLE products ADD COLUMN sample_file_path TEXT"); } catch (\Throwable $e) {}
+                $dbPath = $config['sqlite']['database'] ?? (__DIR__ . '/../data/tpt.db');
+                $isNew = !file_exists($dbPath);
 
-                // Auto-migrate branding if existing store has old brand
-                try {
-                    $store = self::$pdo->query("SELECT name FROM stores WHERE id = 1")->fetch();
-                    if ($store && str_contains($store['name'], 'TeachShare')) {
-                        self::rebrandStoreAndProducts(self::$pdo);
-                    }
-                } catch (\Throwable $e) {}
+                self::$pdo = new PDO("sqlite:" . $dbPath);
+                self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
+                if ($isNew) {
+                    self::migrateAndSeed(self::$pdo);
+                } else {
+                    try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_order_id TEXT"); } catch (\Throwable $e) {}
+                    try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_payment_id TEXT"); } catch (\Throwable $e) {}
+                    try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_signature TEXT"); } catch (\Throwable $e) {}
+                    try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'pending'"); } catch (\Throwable $e) {}
+                    try { self::$pdo->exec("ALTER TABLE products ADD COLUMN sample_downloads INTEGER DEFAULT 0"); } catch (\Throwable $e) {}
+                    try { self::$pdo->exec("ALTER TABLE products ADD COLUMN material_file_path TEXT"); } catch (\Throwable $e) {}
+                    try { self::$pdo->exec("ALTER TABLE products ADD COLUMN sample_file_path TEXT"); } catch (\Throwable $e) {}
+
+                    // Auto-migrate branding if existing store has old brand
+                    try {
+                        $store = self::$pdo->query("SELECT name FROM stores WHERE id = 1")->fetch();
+                        if ($store && str_contains($store['name'], 'TeachShare')) {
+                            self::rebrandStoreAndProducts(self::$pdo);
+                        }
+                    } catch (\Throwable $e) {}
+                }
             }
         }
         return self::$pdo;
