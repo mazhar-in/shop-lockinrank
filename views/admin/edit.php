@@ -14,27 +14,14 @@
         .existing-img-card.is-primary { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25); }
     </style>
 </head>
-<body>
+<body style="background-color: #f8fafc;">
 
-    <!-- Header Navigation -->
-    <header style="background: #0f172a; border-bottom: 1px solid #1e293b; padding: 1rem 0; margin-bottom: 2rem;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <a href="/admin" style="text-decoration: none; display: flex; align-items: center; gap: 0.6rem;">
-                    <img src="/images/lockinrank-icon.svg" alt="Lockinrank" style="width: 30px; height: 30px; border-radius: 6px; display: block;">
-                    <span style="font-size: 1.15rem; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">LOCKINRANK</span>
-                    <span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; font-size: 0.68rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 4px; letter-spacing: 0.5px;">ADMIN</span>
-                </a>
-            </div>
-            <div>
-                <a href="/admin" role="button" class="secondary outline" style="font-size: 0.82rem; padding: 0.35rem 0.85rem; margin-bottom: 0; color: #cbd5e1; border-color: #334155;">
-                    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
-                </a>
-            </div>
-        </div>
-    </header>
+    <?php 
+    $activeTab = 'products';
+    include __DIR__ . '/layout-nav.php'; 
+    ?>
 
-    <main class="container" style="max-width: 900px; margin-bottom: 4rem;">
+    <main class="container" style="max-width: 900px; margin-top: 2rem; margin-bottom: 4rem;">
         
         <div class="edit-card">
             

@@ -125,6 +125,13 @@ class AdminController
         $ordersStmt = $db->query("SELECT * FROM orders ORDER BY id DESC LIMIT 15");
         $recentOrders = $ordersStmt->fetchAll();
 
+        // Customer count and total order count
+        $custCountStmt = $db->query("SELECT COUNT(DISTINCT buyer_email) as c FROM orders WHERE buyer_email IS NOT NULL AND buyer_email != ''");
+        $totalCustomers = (int)($custCountStmt->fetch()['c'] ?? 0);
+
+        $orderCountStmt = $db->query("SELECT COUNT(*) as c FROM orders");
+        $orderCount = (int)($orderCountStmt->fetch()['c'] ?? 0);
+
         $totalEarnings = 0;
         $totalSales = 0;
         $totalSampleDownloads = 0;
@@ -141,6 +148,8 @@ class AdminController
             'totalSales' => $totalSales,
             'totalEarnings' => $totalEarnings,
             'totalSampleDownloads' => $totalSampleDownloads,
+            'totalCustomers' => $totalCustomers,
+            'orderCount' => $orderCount,
             'pageTitle' => 'Admin Dashboard — Lockinrank Shop'
         ]);
     }
@@ -516,6 +525,260 @@ class AdminController
         $db = Database::getConnection();
         $stmt = $db->prepare("DELETE FROM products WHERE id = ?");
         $stmt->execute([(int)$id]);
-        Flight::redirect('/admin');
+        $_SESSION['admin_flash_success'] = "Resource deleted successfully.";
+        Flight::redirect('/admin/products');
+    }
+
+    public static function products()
+    {
+        self::checkAuth();
+        $db = Database::getConnection();
+
+        $page = max(1, (int)(Flight::request()->query['page'] ?? 1));
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $search = trim(Flight::request()->query['q'] ?? '');
+        $gradeFilter = trim(Flight::request()->query['grade'] ?? '');
+        $boardFilter = trim(Flight::request()->query['board'] ?? '');
+
+        $where = ["1=1"];
+        $params = [];
+
+        if (!empty($search)) {
+            $where[] = "(title LIKE ? OR subject LIKE ? OR description LIKE ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+        }
+
+        if (!empty($gradeFilter)) {
+            $where[] = "grade = ?";
+            $params[] = $gradeFilter;
+        }
+
+        if (!empty($boardFilter)) {
+            $where[] = "board = ?";
+            $params[] = $boardFilter;
+        }
+
+        $whereSql = implode(" AND ", $where);
+
+        $countStmt = $db->prepare("SELECT COUNT(*) as cnt FROM products WHERE $whereSql");
+        $countStmt->execute($params);
+        $totalProducts = (int)($countStmt->fetch()['cnt'] ?? 0);
+        $totalPages = max(1, (int)ceil($totalProducts / $limit));
+
+        $sql = "SELECT * FROM products WHERE $whereSql ORDER BY id DESC LIMIT $limit OFFSET $offset";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $products = $stmt->fetchAll();
+
+        $grades = $db->query("SELECT DISTINCT grade FROM products WHERE grade IS NOT NULL AND grade != '' ORDER BY grade ASC")->fetchAll(\PDO::FETCH_COLUMN);
+        $boards = $db->query("SELECT DISTINCT board FROM products WHERE board IS NOT NULL AND board != '' ORDER BY board ASC")->fetchAll(\PDO::FETCH_COLUMN);
+
+        Flight::render('admin/products', [
+            'products' => $products,
+            'totalProducts' => $totalProducts,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'search' => $search,
+            'gradeFilter' => $gradeFilter,
+            'boardFilter' => $boardFilter,
+            'grades' => $grades,
+            'boards' => $boards,
+            'pageTitle' => 'Manage Products — Lockinrank Control Panel'
+        ]);
+    }
+
+    public static function orders()
+    {
+        self::checkAuth();
+        $db = Database::getConnection();
+
+        $page = max(1, (int)(Flight::request()->query['page'] ?? 1));
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $search = trim(Flight::request()->query['q'] ?? '');
+        $statusFilter = trim(Flight::request()->query['status'] ?? '');
+
+        $where = ["1=1"];
+        $params = [];
+
+        if (!empty($search)) {
+            $where[] = "(order_number LIKE ? OR buyer_name LIKE ? OR buyer_email LIKE ? OR buyer_phone LIKE ? OR razorpay_payment_id LIKE ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+        }
+
+        if (!empty($statusFilter)) {
+            $where[] = "payment_status = ?";
+            $params[] = $statusFilter;
+        }
+
+        $whereSql = implode(" AND ", $where);
+
+        $countStmt = $db->prepare("SELECT COUNT(*) as cnt FROM orders WHERE $whereSql");
+        $countStmt->execute($params);
+        $totalOrders = (int)($countStmt->fetch()['cnt'] ?? 0);
+        $totalPages = max(1, (int)ceil($totalOrders / $limit));
+
+        $sql = "SELECT * FROM orders WHERE $whereSql ORDER BY id DESC LIMIT $limit OFFSET $offset";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $orders = $stmt->fetchAll();
+
+        Flight::render('admin/orders', [
+            'orders' => $orders,
+            'totalOrders' => $totalOrders,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'search' => $search,
+            'statusFilter' => $statusFilter,
+            'pageTitle' => 'Manage Orders — Lockinrank Control Panel'
+        ]);
+    }
+
+    public static function customers()
+    {
+        self::checkAuth();
+        $db = Database::getConnection();
+
+        $page = max(1, (int)(Flight::request()->query['page'] ?? 1));
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $search = trim(Flight::request()->query['q'] ?? '');
+
+        $where = ["buyer_email IS NOT NULL AND buyer_email != ''"];
+        $params = [];
+
+        if (!empty($search)) {
+            $where[] = "(buyer_email LIKE ? OR buyer_name LIKE ? OR buyer_phone LIKE ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+        }
+
+        $whereSql = implode(" AND ", $where);
+
+        // Count distinct emails matching search
+        $countSql = "SELECT COUNT(DISTINCT buyer_email) as cnt FROM orders WHERE $whereSql";
+        $countStmt = $db->prepare($countSql);
+        $countStmt->execute($params);
+        $totalCustomers = (int)($countStmt->fetch()['cnt'] ?? 0);
+        $totalPages = max(1, (int)ceil($totalCustomers / $limit));
+
+        // Aggregate customer records
+        $dataSql = "
+            SELECT buyer_email,
+                   MAX(buyer_name) as buyer_name,
+                   MAX(buyer_phone) as buyer_phone,
+                   COUNT(id) as total_orders,
+                   SUM(total_amount) as total_spent,
+                   MIN(created_at) as first_order_date,
+                   MAX(created_at) as last_order_date
+            FROM orders
+            WHERE $whereSql
+            GROUP BY buyer_email
+            ORDER BY last_order_date DESC
+            LIMIT $limit OFFSET $offset
+        ";
+        $stmt = $db->prepare($dataSql);
+        $stmt->execute($params);
+        $customers = $stmt->fetchAll();
+
+        Flight::render('admin/customers', [
+            'customers' => $customers,
+            'totalCustomers' => $totalCustomers,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'search' => $search,
+            'pageTitle' => 'Customer CRM & Profiles — Lockinrank Control Panel'
+        ]);
+    }
+
+    public static function customerDetail()
+    {
+        self::checkAuth();
+        $db = Database::getConnection();
+
+        $email = trim(Flight::request()->query['email'] ?? '');
+        if (empty($email)) {
+            Flight::redirect('/admin/customers');
+            return;
+        }
+
+        // Customer aggregation stats
+        $stmt = $db->prepare("
+            SELECT buyer_email,
+                   MAX(buyer_name) as buyer_name,
+                   MAX(buyer_phone) as buyer_phone,
+                   COUNT(id) as total_orders,
+                   SUM(total_amount) as total_spent,
+                   MIN(created_at) as first_order_date,
+                   MAX(created_at) as last_order_date
+            FROM orders
+            WHERE buyer_email = ?
+            GROUP BY buyer_email
+        ");
+        $stmt->execute([$email]);
+        $customer = $stmt->fetch();
+
+        if (!$customer) {
+            Flight::redirect('/admin/customers');
+            return;
+        }
+
+        // Past order records
+        $ordStmt = $db->prepare("SELECT * FROM orders WHERE buyer_email = ? ORDER BY id DESC");
+        $ordStmt->execute([$email]);
+        $orders = $ordStmt->fetchAll();
+
+        // Purchased materials and token expiry status
+        $itemsStmt = $db->prepare("
+            SELECT oi.*, p.title, p.file_format, p.price as original_price, o.order_number, o.created_at as order_date
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            JOIN orders o ON oi.order_id = o.id
+            WHERE o.buyer_email = ?
+            ORDER BY oi.id DESC
+        ");
+        $itemsStmt->execute([$email]);
+        $materials = $itemsStmt->fetchAll();
+
+        Flight::render('admin/customer-detail', [
+            'customer' => $customer,
+            'orders' => $orders,
+            'materials' => $materials,
+            'pageTitle' => 'Student Profile: ' . htmlspecialchars($customer['buyer_name'] ?: 'Customer') . ' — Lockinrank Control Panel'
+        ]);
+    }
+
+    public static function refreshToken()
+    {
+        self::checkAuth();
+        $db = Database::getConnection();
+
+        $itemId = (int)(Flight::request()->data['item_id'] ?? 0);
+        $returnUrl = Flight::request()->data['return_url'] ?? '/admin/customers';
+
+        if ($itemId <= 0) {
+            $_SESSION['admin_flash_error'] = 'Invalid material item reference.';
+            Flight::redirect($returnUrl);
+            return;
+        }
+
+        $newExpiresAt = date('Y-m-d H:i:s', strtotime('+7 days'));
+
+        $stmt = $db->prepare("UPDATE order_items SET expires_at = ? WHERE id = ?");
+        $stmt->execute([$newExpiresAt, $itemId]);
+
+        $_SESSION['admin_flash_success'] = "Download token renewed! Validity extended for 7 days until " . date('d M Y, h:i A', strtotime($newExpiresAt));
+        Flight::redirect($returnUrl);
     }
 }

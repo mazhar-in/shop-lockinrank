@@ -44,6 +44,11 @@ Flight::route('GET /download/@token:[a-zA-Z0-9_-]+', [CartController::class, 'do
 // --- Password-Protected Admin Portal (/admin) ---
 Flight::route('GET /admin', [AdminController::class, 'dashboard']);
 Flight::route('GET /admin/dashboard', [AdminController::class, 'dashboard']);
+Flight::route('GET /admin/products', [AdminController::class, 'products']);
+Flight::route('GET /admin/orders', [AdminController::class, 'orders']);
+Flight::route('GET /admin/customers', [AdminController::class, 'customers']);
+Flight::route('GET /admin/customer', [AdminController::class, 'customerDetail']);
+Flight::route('POST /admin/token/refresh', [AdminController::class, 'refreshToken']);
 Flight::route('GET /admin/login', [AdminController::class, 'loginForm']);
 Flight::route('POST /admin/login', [AdminController::class, 'loginSubmit']);
 Flight::route('GET /admin/logout', [AdminController::class, 'logout']);

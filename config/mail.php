@@ -16,3 +16,4 @@ return [
     'from_address' => getenv('MAIL_FROM_ADDRESS') ?: 'orders@lockinrank.com',
     'reply_to' => getenv('MAIL_REPLY_TO') ?: 'support@lockinrank.com',
 ];
+

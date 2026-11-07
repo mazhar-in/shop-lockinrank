@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS `order_items` (
     `price` DECIMAL(10,2) NOT NULL,
     `download_token` VARCHAR(100) DEFAULT NULL,
     `download_count` INT DEFAULT 0,
+    `expires_at` DATETIME DEFAULT NULL,
     KEY `idx_order_id` (`order_id`),
     KEY `idx_download_token` (`download_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

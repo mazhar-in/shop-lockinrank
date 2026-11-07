@@ -73,20 +73,24 @@ include __DIR__ . '/layout-header.php';
                 <form id="razorpay-checkout-form" onsubmit="handleRazorpayCheckout(event)">
                     
                     <div style="margin-bottom: 0.75rem;">
-                        <label for="buyer_name" style="font-size: 0.82rem; font-weight: 600; color: #1e293b;">Aspirant / Educator Name</label>
-                        <input type="text" id="buyer_name" name="buyer_name" value="Aryan Verma" required style="font-size: 0.88rem; background-color: #ffffff; color: #0f172a;">
+                        <label for="buyer_name" style="font-size: 0.82rem; font-weight: 700; color: #1e293b;">
+                            Aspirant / Educator Name <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="text" id="buyer_name" name="buyer_name" placeholder="Enter student or teacher full name" required minlength="2" style="font-size: 0.88rem; background-color: #ffffff; color: #0f172a;">
                     </div>
                     
                     <div style="margin-bottom: 0.75rem;">
-                        <label for="buyer_email" style="font-size: 0.82rem; font-weight: 600; color: #1e293b;">Email for Instant Download & Invoice</label>
-                        <input type="email" id="buyer_email" name="buyer_email" value="aryan.verma@example.com" required style="font-size: 0.88rem; background-color: #ffffff; color: #0f172a;">
+                        <label for="buyer_email" style="font-size: 0.82rem; font-weight: 700; color: #1e293b;">
+                            Email for Instant Download &amp; Invoice <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="email" id="buyer_email" name="buyer_email" placeholder="name@example.com (links sent here)" required style="font-size: 0.88rem; background-color: #ffffff; color: #0f172a;">
                     </div>
 
                     <div style="margin-bottom: 1.25rem;">
-                        <label for="buyer_phone" style="font-size: 0.82rem; font-weight: 600; color: #1e293b;">
-                            <i class="fa-brands fa-whatsapp" style="color: #25d366;"></i> WhatsApp Mobile Number (+91)
+                        <label for="buyer_phone" style="font-size: 0.82rem; font-weight: 700; color: #1e293b;">
+                            <i class="fa-brands fa-whatsapp" style="color: #25d366;"></i> WhatsApp Mobile Number (+91) <span style="color: #ef4444;">*</span>
                         </label>
-                        <input type="tel" id="buyer_phone" name="buyer_phone" value="+91 98765 43210" required style="font-size: 0.88rem; background-color: #ffffff; color: #0f172a;">
+                        <input type="tel" id="buyer_phone" name="buyer_phone" placeholder="10-digit WhatsApp number (e.g. 9876543210)" required pattern="[0-9+ -]{10,15}" style="font-size: 0.88rem; background-color: #ffffff; color: #0f172a;">
                     </div>
 
                     <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; margin-bottom: 1.25rem; font-size: 0.82rem;">

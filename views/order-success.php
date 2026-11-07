@@ -64,8 +64,11 @@ include __DIR__ . '/layout-header.php';
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem;">
                     <div>
                         <strong style="font-size: 1rem; color: #0f172a;"><?= htmlspecialchars($d['title']) ?></strong>
-                        <div style="font-size: 0.8rem; color: #64748b;">
-                            Format: <?= htmlspecialchars($format) ?> &bull; Single-student / study license
+                        <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.2rem;">
+                            Format: <?= htmlspecialchars($format) ?> &bull; Single-student license
+                            <?php if (!empty($d['expires_at'])): ?>
+                                &bull; <span style="color: #b45309; font-weight: 700;"><i class="fa-regular fa-clock"></i> Link expires: <?= date('d M Y, h:i A', strtotime($d['expires_at'])) ?></span>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <div>

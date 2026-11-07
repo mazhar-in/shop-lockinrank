@@ -96,9 +96,26 @@ class CartController
 
         $db = Database::getConnection();
 
-        $buyerName = trim(Flight::request()->data['buyer_name'] ?? 'Educator');
-        $buyerEmail = trim(Flight::request()->data['buyer_email'] ?? 'teacher@school.in');
-        $buyerPhone = trim(Flight::request()->data['buyer_phone'] ?? '+91 98765 43210');
+        $buyerName = trim(Flight::request()->data['buyer_name'] ?? '');
+        $buyerEmail = trim(Flight::request()->data['buyer_email'] ?? '');
+        $buyerPhone = trim(Flight::request()->data['buyer_phone'] ?? '');
+
+        // Mandatory checkout validation
+        if (empty($buyerName) || mb_strlen($buyerName) < 2) {
+            Flight::json(['status' => 'error', 'message' => 'Please enter your full name.'], 400);
+            return;
+        }
+
+        if (empty($buyerEmail) || !filter_var($buyerEmail, FILTER_VALIDATE_EMAIL)) {
+            Flight::json(['status' => 'error', 'message' => 'Please enter a valid email address.'], 400);
+            return;
+        }
+
+        $phoneDigits = preg_replace('/[^0-9]/', '', $buyerPhone);
+        if (empty($buyerPhone) || strlen($phoneDigits) < 10) {
+            Flight::json(['status' => 'error', 'message' => 'Please enter a valid 10-digit WhatsApp/mobile number.'], 400);
+            return;
+        }
 
         $total = 0;
         foreach ($items as $item) {
@@ -106,6 +123,7 @@ class CartController
         }
 
         $orderNumber = 'IN-ORD-' . strtoupper(substr(uniqid(), 7));
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+7 days'));
 
         // SCENARIO A: 100% Freebies (Zero payment required)
         if ($total <= 0) {
@@ -118,20 +136,21 @@ class CartController
                 $orderId = $db->lastInsertId();
 
                 $itemStmt = $db->prepare("
-                    INSERT INTO order_items (order_id, product_id, price, download_token)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO order_items (order_id, product_id, price, download_token, expires_at)
+                    VALUES (?, ?, ?, ?, ?)
                 ");
 
                 $orderItems = [];
                 foreach ($items as $item) {
                     $token = bin2hex(random_bytes(16));
-                    $itemStmt->execute([$orderId, $item['id'], 0, $token]);
+                    $itemStmt->execute([$orderId, $item['id'], 0, $token, $expiresAt]);
                     $db->prepare("UPDATE products SET sales_count = sales_count + 1 WHERE id = ?")->execute([$item['id']]);
                     $orderItems[] = [
                         'title' => $item['title'],
                         'file_format' => $item['file_format'] ?? 'PDF',
                         'download_token' => $token,
-                        'price' => 0
+                        'price' => 0,
+                        'expires_at' => $expiresAt
                     ];
                 }
 
@@ -185,13 +204,13 @@ class CartController
             $orderId = $db->lastInsertId();
 
             $itemStmt = $db->prepare("
-                INSERT INTO order_items (order_id, product_id, price, download_token)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO order_items (order_id, product_id, price, download_token, expires_at)
+                VALUES (?, ?, ?, ?, ?)
             ");
 
             foreach ($items as $item) {
                 $token = bin2hex(random_bytes(16));
-                $itemStmt->execute([$orderId, $item['id'], $item['price'], $token]);
+                $itemStmt->execute([$orderId, $item['id'], $item['price'], $token, $expiresAt]);
             }
 
             Flight::json([
@@ -348,7 +367,8 @@ class CartController
         $db = Database::getConnection();
 
         $stmt = $db->prepare("
-            SELECT oi.*, p.title, p.file_format, p.board, p.grade, p.material_file_path, o.order_number, o.razorpay_payment_id
+            SELECT oi.*, p.title, p.file_format, p.board, p.grade, p.material_file_path, 
+                   o.order_number, o.buyer_name, o.buyer_email, o.buyer_phone, o.razorpay_payment_id
             FROM order_items oi
             JOIN products p ON oi.product_id = p.id
             JOIN orders o ON oi.order_id = o.id
@@ -358,7 +378,22 @@ class CartController
         $item = $stmt->fetch();
 
         if (!$item) {
-            Flight::halt(403, 'Invalid or expired download link.');
+            Flight::halt(403, 'Invalid download link.');
+            return;
+        }
+
+        // Check 7-day expiration
+        if (!empty($item['expires_at']) && strtotime($item['expires_at']) < time()) {
+            Flight::render('pages/download-expired', [
+                'item' => $item,
+                'orderNumber' => $item['order_number'] ?? '',
+                'title' => $item['title'] ?? 'Requested Material',
+                'expiredAt' => $item['expires_at'],
+                'buyerName' => $item['buyer_name'] ?? 'Student',
+                'buyerEmail' => $item['buyer_email'] ?? '',
+                'buyerPhone' => $item['buyer_phone'] ?? '',
+                'pageTitle' => 'Download Link Expired — Lockinrank Shop'
+            ]);
             return;
         }
 

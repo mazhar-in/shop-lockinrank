@@ -75,6 +75,30 @@ class Database
         // Ensure columns in order_items exist
         try { $pdo->exec("ALTER TABLE order_items ADD COLUMN download_token VARCHAR(100) DEFAULT NULL"); } catch (\Throwable $e) {}
         try { $pdo->exec("ALTER TABLE order_items ADD COLUMN download_count INT DEFAULT 0"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE order_items ADD COLUMN expires_at DATETIME DEFAULT NULL"); } catch (\Throwable $e) {}
+
+        // Populate fallback expires_at for older orders (7 days after order date)
+        try {
+            $pdo->exec("
+                UPDATE order_items 
+                SET expires_at = (
+                    SELECT datetime(orders.created_at, '+7 days') 
+                    FROM orders 
+                    WHERE orders.id = order_items.order_id
+                )
+                WHERE expires_at IS NULL
+            ");
+        } catch (\Throwable $e) {
+            // MySQL syntax fallback: DATE_ADD
+            try {
+                $pdo->exec("
+                    UPDATE order_items oi
+                    JOIN orders o ON oi.order_id = o.id
+                    SET oi.expires_at = DATE_ADD(o.created_at, INTERVAL 7 DAY)
+                    WHERE oi.expires_at IS NULL
+                ");
+            } catch (\Throwable $e2) {}
+        }
 
         // Ensure columns in orders exist
         try { $pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(100) DEFAULT NULL"); } catch (\Throwable $e) {}

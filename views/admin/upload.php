@@ -11,24 +11,10 @@
 </head>
 <body style="background-color: #f8fafc;">
 
-    <!-- Top Admin Bar -->
-    <header style="background: #0f172a; border-bottom: 1px solid #1e293b; padding: 0.75rem 2rem;">
-        <div style="max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <a href="/admin" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
-                    <div style="background: #4f46e5; color: #ffffff; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </div>
-                    <span style="font-size: 1.1rem; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">Back to Dashboard</span>
-                </a>
-            </div>
-            <div>
-                <a href="/admin/logout" style="background-color: #ef4444; color: #ffffff !important; font-size: 0.8rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 6px; text-decoration: none;">
-                    Sign Out
-                </a>
-            </div>
-        </div>
-    </header>
+    <?php 
+    $activeTab = 'upload';
+    include __DIR__ . '/layout-nav.php'; 
+    ?>
 
     <main class="container" style="max-width: 900px; padding: 2.5rem 1.5rem;">
         
