@@ -1,5 +1,11 @@
 <?php 
 $pageTitle = "Lockinrank Shop — Top-Rank Exam Prep, JEE, NEET & AP Physics";
+$selectedClass = $selectedClass ?? 'All';
+$selectedBoard = $selectedBoard ?? 'All';
+$selectedSubject = $selectedSubject ?? 'All';
+$selectedType = $selectedType ?? 'All';
+$selectedPrice = $selectedPrice ?? 'all';
+$searchQuery = $searchQuery ?? '';
 include __DIR__ . '/layout-header.php'; 
 ?>
 
@@ -25,7 +31,7 @@ include __DIR__ . '/layout-header.php';
     </span>
     <?php foreach ($classes as $c): ?>
         <button type="button" 
-                class="grade-pill <?= $c === 'All' ? 'active' : '' ?>" 
+                class="grade-pill <?= $c === $selectedClass ? 'active' : '' ?>" 
                 onclick="selectClassPill(this, '<?= htmlspecialchars($c) ?>')">
             <?= htmlspecialchars($c) ?>
         </button>
@@ -52,7 +58,7 @@ include __DIR__ . '/layout-header.php';
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h5 style="margin-bottom: 0; font-weight: 800;"><i class="fa-solid fa-sliders" style="color: #4f46e5;"></i> Filters</h5>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <button type="reset" class="btn-reset" onclick="setTimeout(() => htmx.trigger('#filter-form', 'change'), 50)">Reset</button>
+                    <a href="/" class="btn-reset" role="button" style="text-decoration: none; padding: 0.2rem 0.6rem; font-size: 0.78rem; display: inline-block;">Reset</a>
                     <button type="button" class="btn-close-sheet" onclick="closeFilterSheet()" aria-label="Close filters">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
@@ -64,7 +70,7 @@ include __DIR__ . '/layout-header.php';
                 <label for="class-select" style="font-size: 0.85rem; font-weight: 700;">Target Exam / Course</label>
                 <select id="class-select" name="class" style="font-size: 0.85rem; color: #0f172a; background-color: #ffffff;">
                     <?php foreach ($classes as $c): ?>
-                        <option value="<?= htmlspecialchars($c) ?>"><?= htmlspecialchars($c) ?></option>
+                        <option value="<?= htmlspecialchars($c) ?>" <?= ($c === $selectedClass) ? 'selected' : '' ?>><?= htmlspecialchars($c) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -74,7 +80,7 @@ include __DIR__ . '/layout-header.php';
                 <label for="board-select" style="font-size: 0.85rem; font-weight: 700;">Board / Authority Pattern</label>
                 <select id="board-select" name="board" style="font-size: 0.85rem; color: #0f172a; background-color: #ffffff;">
                     <?php foreach ($boards as $b): ?>
-                        <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+                        <option value="<?= htmlspecialchars($b) ?>" <?= ($b === $selectedBoard) ? 'selected' : '' ?>><?= htmlspecialchars($b) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -84,7 +90,7 @@ include __DIR__ . '/layout-header.php';
                 <label for="subject-select" style="font-size: 0.85rem; font-weight: 700;">Subject Area</label>
                 <select id="subject-select" name="subject" style="font-size: 0.85rem; color: #0f172a; background-color: #ffffff;">
                     <?php foreach ($subjects as $s): ?>
-                        <option value="<?= htmlspecialchars($s) ?>"><?= htmlspecialchars($s) ?></option>
+                        <option value="<?= htmlspecialchars($s) ?>" <?= ($s === $selectedSubject) ? 'selected' : '' ?>><?= htmlspecialchars($s) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -94,7 +100,7 @@ include __DIR__ . '/layout-header.php';
                 <label for="type-select" style="font-size: 0.85rem; font-weight: 700;">Format Type</label>
                 <select id="type-select" name="type" style="font-size: 0.85rem; color: #0f172a; background-color: #ffffff;">
                     <?php foreach ($types as $t): ?>
-                        <option value="<?= htmlspecialchars($t) ?>"><?= htmlspecialchars($t) ?></option>
+                        <option value="<?= htmlspecialchars($t) ?>" <?= ($t === $selectedType) ? 'selected' : '' ?>><?= htmlspecialchars($t) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -111,19 +117,19 @@ include __DIR__ . '/layout-header.php';
             <div class="filter-group">
                 <label style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; display: block;">Price in INR (₹)</label>
                 <label style="font-size: 0.84rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
-                    <input type="radio" name="price" value="all" checked> Any Price
+                    <input type="radio" name="price" value="all" <?= ($selectedPrice === 'all') ? 'checked' : '' ?>> Any Price
                 </label>
                 <label style="font-size: 0.84rem; margin-bottom: 0.35rem; color: #16a34a; font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
-                    <input type="radio" name="price" value="free"> 100% Free Resources
+                    <input type="radio" name="price" value="free" <?= ($selectedPrice === 'free') ? 'checked' : '' ?>> 100% Free Resources
                 </label>
                 <label style="font-size: 0.84rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
-                    <input type="radio" name="price" value="under99"> Under ₹99
+                    <input type="radio" name="price" value="under99" <?= ($selectedPrice === 'under99') ? 'checked' : '' ?>> Under ₹99
                 </label>
                 <label style="font-size: 0.84rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
-                    <input type="radio" name="price" value="under199"> ₹99 to ₹199
+                    <input type="radio" name="price" value="under199" <?= ($selectedPrice === 'under199') ? 'checked' : '' ?>> ₹99 to ₹199
                 </label>
                 <label style="font-size: 0.84rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
-                    <input type="radio" name="price" value="above199"> Above ₹199
+                    <input type="radio" name="price" value="above199" <?= ($selectedPrice === 'above199') ? 'checked' : '' ?>> Above ₹199
                 </label>
             </div>
 

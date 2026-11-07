@@ -31,28 +31,42 @@ class ProductController
         $reviews = $revStmt->fetchAll();
 
         // Get related products prioritizing the same course / exam
-        $relStmt = $db->prepare("
-            SELECT p.*, s.name as store_name,
-                   CASE 
-                       WHEN p.grade = :grade AND p.board = :board THEN 4
-                       WHEN p.grade = :grade THEN 3
-                       WHEN p.board = :board THEN 2
-                       WHEN p.subject = :subject THEN 1
-                       ELSE 0
-                   END as relevance
-            FROM products p 
-            JOIN stores s ON p.store_id = s.id
-            WHERE p.id != :id
-            ORDER BY relevance DESC, p.sales_count DESC, p.rating DESC
-            LIMIT 4
-        ");
-        $relStmt->execute([
-            ':grade' => $product['grade'],
-            ':board' => $product['board'] ?? '',
-            ':subject' => $product['subject'] ?? '',
-            ':id' => $product['id']
-        ]);
-        $related = $relStmt->fetchAll();
+        $related = [];
+        try {
+            $relStmt = $db->prepare("
+                SELECT p.*, s.name as store_name,
+                       CASE 
+                           WHEN p.grade = :grade1 AND p.board = :board1 THEN 4
+                           WHEN p.grade = :grade2 THEN 3
+                           WHEN p.board = :board2 THEN 2
+                           WHEN p.subject = :subject1 THEN 1
+                           ELSE 0
+                       END as relevance
+                FROM products p 
+                JOIN stores s ON p.store_id = s.id
+                WHERE p.id != :prod_id
+                ORDER BY relevance DESC, p.sales_count DESC, p.rating DESC
+                LIMIT 4
+            ");
+            $relStmt->execute([
+                ':grade1'   => $product['grade'] ?? '',
+                ':board1'   => $product['board'] ?? '',
+                ':grade2'   => $product['grade'] ?? '',
+                ':board2'   => $product['board'] ?? '',
+                ':subject1' => $product['subject'] ?? '',
+                ':prod_id'  => (int)$product['id']
+            ]);
+            $related = $relStmt->fetchAll();
+        } catch (\Throwable $relErr) {
+            error_log("Related products query error: " . $relErr->getMessage());
+            try {
+                $fallback = $db->prepare("SELECT p.*, s.name as store_name FROM products p JOIN stores s ON p.store_id = s.id WHERE p.id != ? LIMIT 4");
+                $fallback->execute([(int)$product['id']]);
+                $related = $fallback->fetchAll();
+            } catch (\Throwable $fbErr) {
+                $related = [];
+            }
+        }
 
         $previewImages = json_decode($product['preview_images'] ?? '[]', true) ?: [];
         if (!empty($product['thumbnail_url']) && !in_array($product['thumbnail_url'], $previewImages)) {

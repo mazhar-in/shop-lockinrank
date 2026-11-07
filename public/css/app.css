@@ -1234,3 +1234,20 @@ a.nav-cart-btn:active,
     }
 }
 
+/* Site Footer & Mobile Dock Clearance */
+.site-footer a {
+    color: #475569 !important;
+    text-decoration: none !important;
+    transition: color 0.15s ease;
+}
+.site-footer a:hover {
+    color: #4f46e5 !important;
+    text-decoration: underline !important;
+}
+@media (max-width: 768px) {
+    .site-footer {
+        padding-bottom: 95px !important;
+    }
+}
+
+
