@@ -64,12 +64,12 @@ CREATE TABLE IF NOT EXISTS `orders` (
     `buyer_email` VARCHAR(255) NOT NULL,
     `buyer_phone` VARCHAR(50),
     `payment_method` VARCHAR(50) DEFAULT 'Razorpay',
-    `razorpay_order_id` VARCHAR(100),
-    `razorpay_payment_id` VARCHAR(100),
-    `razorpay_signature` VARCHAR(255),
+    `razorpay_order_id` VARCHAR(100) DEFAULT NULL,
+    `razorpay_payment_id` VARCHAR(100) DEFAULT NULL,
+    `razorpay_signature` VARCHAR(255) DEFAULT NULL,
     `payment_status` VARCHAR(50) DEFAULT 'pending',
     `total_amount` DECIMAL(10,2) NOT NULL,
-    `download_token` VARCHAR(100) UNIQUE,
+    `download_token` VARCHAR(100) DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -78,7 +78,10 @@ CREATE TABLE IF NOT EXISTS `order_items` (
     `order_id` INT NOT NULL,
     `product_id` INT NOT NULL,
     `price` DECIMAL(10,2) NOT NULL,
-    KEY `idx_order_id` (`order_id`)
+    `download_token` VARCHAR(100) DEFAULT NULL,
+    `download_count` INT DEFAULT 0,
+    KEY `idx_order_id` (`order_id`),
+    KEY `idx_download_token` (`download_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data for table `stores`

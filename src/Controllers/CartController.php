@@ -107,31 +107,40 @@ class CartController
 
         // SCENARIO A: 100% Freebies (Zero payment required)
         if ($total <= 0) {
-            $orderStmt = $db->prepare("
-                INSERT INTO orders (order_number, buyer_name, buyer_email, buyer_phone, payment_method, payment_status, total_amount)
-                VALUES (?, ?, ?, ?, 'Free Download', 'paid', 0)
-            ");
-            $orderStmt->execute([$orderNumber, $buyerName, $buyerEmail, $buyerPhone]);
-            $orderId = $db->lastInsertId();
+            try {
+                $orderStmt = $db->prepare("
+                    INSERT INTO orders (order_number, buyer_name, buyer_email, buyer_phone, payment_method, payment_status, total_amount)
+                    VALUES (?, ?, ?, ?, 'Free Download', 'paid', 0)
+                ");
+                $orderStmt->execute([$orderNumber, $buyerName, $buyerEmail, $buyerPhone]);
+                $orderId = $db->lastInsertId();
 
-            $itemStmt = $db->prepare("
-                INSERT INTO order_items (order_id, product_id, price, download_token)
-                VALUES (?, ?, ?, ?)
-            ");
+                $itemStmt = $db->prepare("
+                    INSERT INTO order_items (order_id, product_id, price, download_token)
+                    VALUES (?, ?, ?, ?)
+                ");
 
-            foreach ($items as $item) {
-                $token = bin2hex(random_bytes(16));
-                $itemStmt->execute([$orderId, $item['id'], 0, $token]);
-                $db->prepare("UPDATE products SET sales_count = sales_count + 1 WHERE id = ?")->execute([$item['id']]);
+                foreach ($items as $item) {
+                    $token = bin2hex(random_bytes(16));
+                    $itemStmt->execute([$orderId, $item['id'], 0, $token]);
+                    $db->prepare("UPDATE products SET sales_count = sales_count + 1 WHERE id = ?")->execute([$item['id']]);
+                }
+
+                $_SESSION['cart'] = [];
+
+                Flight::json([
+                    'status' => 'free',
+                    'redirect_url' => '/order/success/' . $orderNumber
+                ]);
+                return;
+            } catch (\Throwable $e) {
+                error_log("Freebie checkout error: " . $e->getMessage());
+                Flight::json([
+                    'status' => 'error',
+                    'message' => 'Free checkout failed: ' . $e->getMessage()
+                ], 500);
+                return;
             }
-
-            $_SESSION['cart'] = [];
-
-            Flight::json([
-                'status' => 'free',
-                'redirect_url' => '/order/success/' . $orderNumber
-            ]);
-            return;
         }
 
         // SCENARIO B: Paid order requiring Razorpay standard checkout

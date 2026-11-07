@@ -137,7 +137,14 @@ include __DIR__ . '/layout-header.php';
                 body: formData
             });
 
-            const data = await response.json();
+            const textResponse = await response.text();
+            let data;
+            try {
+                data = JSON.parse(textResponse);
+            } catch (err) {
+                console.error("Non-JSON server response:", textResponse);
+                throw new Error("Server error (" + response.status + "): Could not process order. Please try again.");
+            }
 
             if (data.status === 'error') {
                 throw new Error(data.message || 'Payment initiation failed.');
@@ -190,7 +197,13 @@ include __DIR__ . '/layout-header.php';
                                 body: new URLSearchParams(verifyPayload)
                             });
 
-                            const verifyData = await verifyRes.json();
+                            const verifyText = await verifyRes.text();
+                            let verifyData;
+                            try {
+                                verifyData = JSON.parse(verifyText);
+                            } catch (e) {
+                                throw new Error("Payment verification server error (" + verifyRes.status + ")");
+                            }
 
                             if (verifyData.status === 'success') {
                                 window.location.href = verifyData.redirect_url;

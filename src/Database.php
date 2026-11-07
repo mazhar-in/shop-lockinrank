@@ -33,12 +33,16 @@ class Database
                             self::$pdo->exec($sql);
                         }
                     }
+
+                    // Always ensure all required columns exist on MySQL
+                    self::ensureSchema(self::$pdo);
                 } catch (\Throwable $e) {
                     error_log("MySQL connection failed: " . $e->getMessage() . " — Falling back to SQLite.");
                     $dbPath = $config['sqlite']['database'] ?? (__DIR__ . '/../data/tpt.db');
                     self::$pdo = new PDO("sqlite:" . $dbPath);
                     self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+                    self::ensureSchema(self::$pdo);
                 }
             } else {
                 $dbPath = $config['sqlite']['database'] ?? (__DIR__ . '/../data/tpt.db');
@@ -51,13 +55,7 @@ class Database
                 if ($isNew) {
                     self::migrateAndSeed(self::$pdo);
                 } else {
-                    try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_order_id TEXT"); } catch (\Throwable $e) {}
-                    try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_payment_id TEXT"); } catch (\Throwable $e) {}
-                    try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_signature TEXT"); } catch (\Throwable $e) {}
-                    try { self::$pdo->exec("ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'pending'"); } catch (\Throwable $e) {}
-                    try { self::$pdo->exec("ALTER TABLE products ADD COLUMN sample_downloads INTEGER DEFAULT 0"); } catch (\Throwable $e) {}
-                    try { self::$pdo->exec("ALTER TABLE products ADD COLUMN material_file_path TEXT"); } catch (\Throwable $e) {}
-                    try { self::$pdo->exec("ALTER TABLE products ADD COLUMN sample_file_path TEXT"); } catch (\Throwable $e) {}
+                    self::ensureSchema(self::$pdo);
 
                     // Auto-migrate branding if existing store has old brand
                     try {
@@ -70,6 +68,25 @@ class Database
             }
         }
         return self::$pdo;
+    }
+
+    private static function ensureSchema(PDO $pdo): void
+    {
+        // Ensure columns in order_items exist
+        try { $pdo->exec("ALTER TABLE order_items ADD COLUMN download_token VARCHAR(100) DEFAULT NULL"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE order_items ADD COLUMN download_count INT DEFAULT 0"); } catch (\Throwable $e) {}
+
+        // Ensure columns in orders exist
+        try { $pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(100) DEFAULT NULL"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_payment_id VARCHAR(100) DEFAULT NULL"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE orders ADD COLUMN razorpay_signature VARCHAR(255) DEFAULT NULL"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE orders ADD COLUMN payment_status VARCHAR(50) DEFAULT 'pending'"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE orders ADD COLUMN download_token VARCHAR(100) DEFAULT NULL"); } catch (\Throwable $e) {}
+
+        // Ensure columns in products exist
+        try { $pdo->exec("ALTER TABLE products ADD COLUMN sample_downloads INT DEFAULT 0"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE products ADD COLUMN material_file_path TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE products ADD COLUMN sample_file_path TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
     }
 
     private static function migrateAndSeed(PDO $db): void
