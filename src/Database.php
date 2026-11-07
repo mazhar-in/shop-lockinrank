@@ -17,9 +17,29 @@ class Database
             if (($config['default'] ?? 'sqlite') === 'mysql' && !empty($config['mysql']['database'])) {
                 $m = $config['mysql'];
                 $dsn = "mysql:host={$m['host']};port={$m['port']};dbname={$m['database']};charset={$m['charset']}";
-                self::$pdo = new PDO($dsn, $m['username'], $m['password']);
-                self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+                try {
+                    self::$pdo = new PDO($dsn, $m['username'], $m['password'], [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                        PDO::ATTR_EMULATE_PREPARES => false
+                    ]);
+
+                    // Auto-seed Hostinger MySQL if tables do not exist yet
+                    $tableCheck = self::$pdo->query("SHOW TABLES LIKE 'stores'")->fetch();
+                    if (!$tableCheck) {
+                        $dumpPath = __DIR__ . '/../data/hostinger_mysql_dump.sql';
+                        if (file_exists($dumpPath)) {
+                            $sql = file_get_contents($dumpPath);
+                            self::$pdo->exec($sql);
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    error_log("MySQL connection failed: " . $e->getMessage() . " — Falling back to SQLite.");
+                    $dbPath = $config['sqlite']['database'] ?? (__DIR__ . '/../data/tpt.db');
+                    self::$pdo = new PDO("sqlite:" . $dbPath);
+                    self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+                }
             } else {
                 $dbPath = $config['sqlite']['database'] ?? (__DIR__ . '/../data/tpt.db');
                 $isNew = !file_exists($dbPath);

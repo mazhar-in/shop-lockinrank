@@ -68,3 +68,4 @@ Commit and push to `main` — Hostinger will deploy the live payment configurati
 * **Default Username:** `admin`
 * **Default Password:** `admin123`
 * **Change Credentials:** Edit [`config/admin.php`](config/admin.php) to update username or generate a new Bcrypt hash with `password_hash('your_new_password', PASSWORD_BCRYPT)`.
+
