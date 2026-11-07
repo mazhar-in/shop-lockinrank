@@ -5,6 +5,8 @@ namespace App\Controllers;
 use Flight;
 use App\Database;
 use App\Services\RazorpayService;
+use App\Services\MailService;
+use App\Services\WhatsAppService;
 
 class CartController
 {
@@ -120,10 +122,32 @@ class CartController
                     VALUES (?, ?, ?, ?)
                 ");
 
+                $orderItems = [];
                 foreach ($items as $item) {
                     $token = bin2hex(random_bytes(16));
                     $itemStmt->execute([$orderId, $item['id'], 0, $token]);
                     $db->prepare("UPDATE products SET sales_count = sales_count + 1 WHERE id = ?")->execute([$item['id']]);
+                    $orderItems[] = [
+                        'title' => $item['title'],
+                        'file_format' => $item['file_format'] ?? 'PDF',
+                        'download_token' => $token,
+                        'price' => 0
+                    ];
+                }
+
+                // Automated Email Receipt via Hostinger SMTP
+                $orderRecord = [
+                    'order_number' => $orderNumber,
+                    'buyer_name' => $buyerName,
+                    'buyer_email' => $buyerEmail,
+                    'buyer_phone' => $buyerPhone,
+                    'payment_method' => 'Free Download',
+                    'total_amount' => 0
+                ];
+                try {
+                    MailService::sendOrderReceipt($orderRecord, $orderItems);
+                } catch (\Throwable $mailErr) {
+                    error_log("MailService freebie receipt error: " . $mailErr->getMessage());
                 }
 
                 $_SESSION['cart'] = [];
@@ -247,12 +271,24 @@ class CartController
         $order = $orderStmt->fetch();
 
         if ($order) {
-            $itemsStmt = $db->prepare("SELECT product_id FROM order_items WHERE order_id = ?");
+            $itemsStmt = $db->prepare("
+                SELECT oi.*, p.title, p.file_format 
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id = ?
+            ");
             $itemsStmt->execute([$order['id']]);
             $orderItems = $itemsStmt->fetchAll();
 
             foreach ($orderItems as $oi) {
                 $db->prepare("UPDATE products SET sales_count = sales_count + 1 WHERE id = ?")->execute([$oi['product_id']]);
+            }
+
+            // Automated Email Receipt via Hostinger SMTP
+            try {
+                MailService::sendOrderReceipt($order, $orderItems);
+            } catch (\Throwable $mailErr) {
+                error_log("MailService paid receipt error: " . $mailErr->getMessage());
             }
         }
 
@@ -290,6 +326,10 @@ class CartController
         $itemsStmt->execute([$order['id']]);
         $downloads = $itemsStmt->fetchAll();
 
+        $domain = getenv('STORE_DOMAIN') ?: (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'shop.lockinrank.com');
+        $baseUrl = str_contains($domain, 'localhost') ? "http://{$domain}" : "https://{$domain}";
+        $whatsappUrl = WhatsAppService::generateClickToChatUrl($order, $downloads, $baseUrl);
+
         Flight::render('order-success', [
             'orderNumber' => $order['order_number'],
             'buyerName' => $order['buyer_name'],
@@ -298,7 +338,8 @@ class CartController
             'paymentMethod' => $order['payment_method'],
             'razorpayPaymentId' => $order['razorpay_payment_id'] ?? null,
             'total' => $order['total_amount'],
-            'downloads' => $downloads
+            'downloads' => $downloads,
+            'whatsappUrl' => $whatsappUrl
         ]);
     }
 

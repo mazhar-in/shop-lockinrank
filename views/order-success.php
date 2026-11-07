@@ -23,10 +23,30 @@ include __DIR__ . '/layout-header.php';
         <br>
     <?php endif; ?>
 
-    <!-- WhatsApp Delivery Pill -->
-    <div style="display: inline-flex; align-items: center; gap: 0.6rem; background-color: rgba(37, 211, 102, 0.1); border: 1px solid rgba(37, 211, 102, 0.3); color: #166534; padding: 0.5rem 1.25rem; border-radius: 50px; font-size: 0.88rem; font-weight: 600; margin-bottom: 2rem;">
-        <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem; color: #25d366;"></i>
-        <span>Download link & invoice sent to WhatsApp: <strong><?= htmlspecialchars($buyerPhone) ?></strong></span>
+    <!-- WhatsApp & Email Delivery Notifications -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.85rem; margin-bottom: 2rem;">
+        
+        <!-- 1-Click WhatsApp Instant Delivery Button -->
+        <?php if (!empty($whatsappUrl)): ?>
+            <a href="<?= htmlspecialchars($whatsappUrl) ?>" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               role="button" 
+               style="background-color: #25d366; border-color: #25d366; color: #ffffff !important; font-weight: 800; font-size: 1rem; padding: 0.85rem 1.6rem; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.65rem; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.35); transition: transform 0.15s ease;">
+                <i class="fa-brands fa-whatsapp" style="font-size: 1.4rem;"></i>
+                <span>Send Links to My WhatsApp (<?= htmlspecialchars($buyerPhone) ?>)</span>
+            </a>
+            <div style="font-size: 0.8rem; color: #64748b;">
+                <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> 1-Tap instant access &bull; Keeps your download links saved directly in WhatsApp
+            </div>
+        <?php endif; ?>
+
+        <!-- Email Receipt Confirmed Badge -->
+        <div style="display: inline-flex; align-items: center; gap: 0.5rem; background-color: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 0.45rem 1rem; border-radius: 50px; font-size: 0.82rem;">
+            <i class="fa-regular fa-envelope" style="color: #4f46e5;"></i>
+            <span>Receipt &amp; secure download links sent to <strong><?= htmlspecialchars($buyerEmail) ?></strong></span>
+        </div>
+
     </div>
 
     <!-- Downloadable Items Box -->
@@ -62,7 +82,7 @@ include __DIR__ . '/layout-header.php';
         <a href="/" role="button" style="background-color: #ffffff; color: #0f172a !important; border: 1px solid #cbd5e1; font-weight: 600; text-decoration: none;">
             Explore More Resources
         </a>
-        <a href="/seller/dashboard" role="button" style="background-color: #0284c7; color: #ffffff !important; border: 1px solid #0284c7; font-weight: 600; text-decoration: none;">
+        <a href="/admin/dashboard" role="button" style="background-color: #0284c7; color: #ffffff !important; border: 1px solid #0284c7; font-weight: 600; text-decoration: none;">
             Store Admin Dashboard
         </a>
     </div>
