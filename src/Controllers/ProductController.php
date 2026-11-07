@@ -30,15 +30,28 @@ class ProductController
         $revStmt->execute([$product['id']]);
         $reviews = $revStmt->fetchAll();
 
-        // Get related products from same grade or subject
+        // Get related products prioritizing the same course / exam
         $relStmt = $db->prepare("
-            SELECT p.*, s.name as store_name 
+            SELECT p.*, s.name as store_name,
+                   CASE 
+                       WHEN p.grade = :grade AND p.board = :board THEN 4
+                       WHEN p.grade = :grade THEN 3
+                       WHEN p.board = :board THEN 2
+                       WHEN p.subject = :subject THEN 1
+                       ELSE 0
+                   END as relevance
             FROM products p 
             JOIN stores s ON p.store_id = s.id
-            WHERE (p.subject = ? OR p.grade = ?) AND p.id != ? 
-            LIMIT 3
+            WHERE p.id != :id
+            ORDER BY relevance DESC, p.sales_count DESC, p.rating DESC
+            LIMIT 4
         ");
-        $relStmt->execute([$product['subject'], $product['grade'], $product['id']]);
+        $relStmt->execute([
+            ':grade' => $product['grade'],
+            ':board' => $product['board'] ?? '',
+            ':subject' => $product['subject'] ?? '',
+            ':id' => $product['id']
+        ]);
         $related = $relStmt->fetchAll();
 
         $previewImages = json_decode($product['preview_images'] ?? '[]', true) ?: [];

@@ -329,6 +329,101 @@ include __DIR__ . '/layout-header.php';
     </div>
 </div>
 
+<!-- Related Products Section: Same Course Recommendations -->
+<?php if (!empty($related)): ?>
+<div class="related-products-section" style="margin-bottom: 3.5rem; border-top: 1px solid #e2e8f0; padding-top: 2.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+            <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: #e0e7ff; color: #3730a3; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.4rem;">
+                <i class="fa-solid fa-graduation-cap"></i> <?= htmlspecialchars($product['grade']) ?> Curriculum
+            </div>
+            <h3 style="font-size: 1.4rem; font-weight: 900; color: #0f172a; margin: 0;">
+                You Will Also Be Interested In
+            </h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin: 0.2rem 0 0 0;">
+                Related high-yield question banks, study sheets, and problem sets for <strong><?= htmlspecialchars($product['grade']) ?></strong>
+            </p>
+        </div>
+        <a href="/?class=<?= urlencode($product['grade']) ?>" style="font-size: 0.88rem; font-weight: 700; color: #4f46e5; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
+            Explore All <?= htmlspecialchars($product['grade']) ?> Resources &rarr;
+        </a>
+    </div>
+
+    <div class="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.25rem;">
+        <?php foreach ($related as $rel): ?>
+            <div class="product-card">
+                <div class="product-thumbnail-wrap">
+                    <a href="/product/<?= htmlspecialchars($rel['slug']) ?>">
+                        <img src="<?= htmlspecialchars($rel['thumbnail_url']) ?>" alt="<?= htmlspecialchars($rel['title']) ?>" loading="lazy">
+                    </a>
+                    <div class="badge-overlay">
+                        <span class="chip" style="background: #0284c7;"><?= htmlspecialchars($rel['board'] ?? 'CBSE') ?></span>
+                        <span class="chip"><?= htmlspecialchars($rel['grade']) ?></span>
+                        <?php if ($rel['is_free']): ?>
+                            <span class="chip chip-free">FREEBIE</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="product-card-body">
+                    <a href="/product/<?= htmlspecialchars($rel['slug']) ?>" class="product-title" style="font-size: 0.92rem; font-weight: 800; line-height: 1.35;">
+                        <?= htmlspecialchars($rel['title']) ?>
+                    </a>
+
+                    <div class="product-author" style="margin-top: 0.25rem;">
+                        <i class="fa-solid fa-circle-check" style="color: #0284c7; font-size: 0.8rem;"></i>
+                        <span style="color: #475569; font-weight: 500; font-size: 0.78rem;">By <?= htmlspecialchars($rel['store_name'] ?? 'Lockinrank Academic Team') ?></span>
+                    </div>
+
+                    <div class="rating-stars" style="margin: 0.35rem 0;">
+                        <?php
+                        $fullStars = floor($rel['rating']);
+                        for ($i = 0; $i < $fullStars; $i++): ?>
+                            <i class="fa-solid fa-star"></i>
+                        <?php endfor; ?>
+                        <strong style="color: #b45309; font-size: 0.82rem;"><?= number_format($rel['rating'], 1) ?></strong>
+                        <span class="rating-count" style="font-size: 0.75rem;">(<?= $rel['review_count'] ?>)</span>
+                    </div>
+
+                    <div class="product-card-footer" style="margin-top: auto; padding-top: 0.65rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <?php if ($rel['is_free']): ?>
+                                <span class="product-price price-free" style="font-size: 1rem; font-weight: 800;">FREE</span>
+                            <?php else: ?>
+                                <span class="product-price" style="font-size: 1rem; font-weight: 800; color: #0f172a;">₹<?= number_format($rel['price'], 0) ?></span>
+                            <?php endif; ?>
+                        </div>
+
+                        <div style="display: flex; gap: 0.35rem;">
+                            <button type="button" 
+                                    class="btn-card-preview"
+                                    hx-get="/product/preview/<?= $rel['id'] ?>" 
+                                    hx-target="#preview-modal-content"
+                                    onclick="openPreviewModal()"
+                                    title="Quick Preview">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+
+                            <form action="/cart/add" method="POST" style="margin-bottom: 0;" 
+                                  hx-post="/cart/add" 
+                                  hx-target="#nav-cart-btn" 
+                                  hx-swap="outerHTML">
+                                <input type="hidden" name="product_id" value="<?= $rel['id'] ?>">
+                                <button type="submit" 
+                                        class="btn-card-cart"
+                                        title="Add to Cart">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Mobile Sticky Bottom Purchase Bar (Docked to bottom on mobile devices) -->
 <div class="mobile-sticky-purchase-bar" id="mobileStickyPurchaseBar">
     <div class="mobile-sticky-price-box">

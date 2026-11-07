@@ -76,3 +76,4 @@ $waUrl = "https://wa.me/" . $supportPhone . "?text=" . rawurlencode($msg);
 </div>
 
 <?php include __DIR__ . '/../layout-footer.php'; ?>
+
