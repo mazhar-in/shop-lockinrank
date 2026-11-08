@@ -236,12 +236,12 @@
                             Click to Browse or Drag & Drop Multiple Images
                         </div>
                         <small style="color: #64748b; font-size: 0.78rem;">
-                            PNG, JPG, WEBP, GIF, or SVG (Up to 10MB per file). Select multiple files at once.
+                            <i class="fa-solid fa-bolt" style="color: #10b981;"></i> Auto-compressed &amp; optimized on upload. PNG, JPG, WEBP, GIF, or SVG. Select multiple files at once.
                         </small>
                     </div>
 
-                    <!-- Client-side Preview of Chosen Files -->
-                    <div id="filePreviewContainer" class="admin-preview-grid" style="display: none;"></div>
+                    <!-- Client-side Preview of Chosen Files with Compression Stats -->
+                    <div id="filePreviewContainer" style="display: none; margin-top: 1rem;"></div>
 
                     <!-- External Image URLs (Optional) -->
                     <div style="margin-top: 1.25rem;">
@@ -283,31 +283,10 @@
 
     </main>
 
+    <script src="/js/image-compressor.js"></script>
     <script>
         function previewSelectedFiles(input) {
-            const container = document.getElementById('filePreviewContainer');
-            container.innerHTML = '';
-            
-            if (!input.files || input.files.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
-
-            container.style.display = 'grid';
-
-            Array.from(input.files).forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const item = document.createElement('div');
-                    item.className = 'admin-preview-item';
-                    item.innerHTML = `
-                        <img src="${e.target.result}" alt="Preview">
-                        <span class="admin-preview-badge">${index === 0 ? 'Primary Cover' : '#' + (index + 1)}</span>
-                    `;
-                    container.appendChild(item);
-                };
-                reader.readAsDataURL(file);
-            });
+            processAndCompressInput(input, 'filePreviewContainer', '#');
         }
 
         const dropzone = document.getElementById('dropzone');

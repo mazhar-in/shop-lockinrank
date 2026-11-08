@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use Flight;
 use App\Database;
+use App\Services\ImageOptimizer;
 
 class AdminController
 {
@@ -203,6 +204,7 @@ class AdminController
 
     /**
      * Helper to process multiple uploaded images from $_FILES['images']
+     * Automatically compresses, downscales heavy images, converts to WebP/JPEG, and saves to /public/uploads/products/
      */
     private static function handleUploadedImages(): array
     {
@@ -229,10 +231,10 @@ class AdminController
                     finfo_close($finfo);
 
                     if (in_array($ext, $allowedExtensions) && (in_array($mime, $allowedMimes) || $ext === 'svg')) {
-                        $safeName = 'prod_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-                        $targetPath = $uploadDir . $safeName;
-                        if (move_uploaded_file($tmpName, $targetPath)) {
-                            $uploaded[] = '/uploads/products/' . $safeName;
+                        // Compress & convert to optimized WebP/JPEG using ImageOptimizer
+                        $storedUrl = ImageOptimizer::compressAndStore($tmpName, $originalName, $uploadDir);
+                        if ($storedUrl) {
+                            $uploaded[] = $storedUrl;
                         }
                     }
                 }
