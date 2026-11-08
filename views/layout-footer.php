@@ -41,7 +41,7 @@
                 <!-- Col 1: Store Bio -->
                 <div>
                     <a href="/" class="brand-logo" style="margin-bottom: 0.75rem; display: inline-flex;">
-                        <img src="/images/lockinrank-logo.svg" alt="Lockinrank Shop" style="height: 34px; width: auto; display: block;">
+                        <img src="/images/lockinrank-logo.svg" alt="Lockinrank Shop" style="height: 42px; width: auto; display: block;">
                     </a>
                     <p style="font-size: 0.88rem; color: #64748b; line-height: 1.6; max-width: 420px; margin-bottom: 0.75rem;">
                         Premier digital store for <strong>Lockinrank</strong> (<strong>shop.lockinrank.com</strong>). Rigorous, high-yield DPPs, question sets, formula cards, and concept boosters for JEE Main, JEE Advanced, NEET, CBSE Boards, and College Board AP Physics.

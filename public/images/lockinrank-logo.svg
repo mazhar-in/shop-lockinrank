@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 56" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 274 42" fill="none">
   <defs>
     <linearGradient id="rankGradient" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#059669" />
-      <stop offset="60%" stop-color="#0284c7" />
+      <stop offset="50%" stop-color="#0284c7" />
       <stop offset="100%" stop-color="#00bcd4" />
     </linearGradient>
     <linearGradient id="badgeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -11,10 +11,10 @@
     </linearGradient>
   </defs>
 
-  <!-- Official Brand Mark (Vector conversion from uploaded logo) -->
-  <g transform="translate(6, 5) scale(0.0224609375)">
+  <!-- Official Brand Mark (Scale: 38px / 2048px = 0.0185546875) -->
+  <g transform="translate(2, 2) scale(0.0185546875)">
     <!-- Dark Slate Squircle Background -->
-    <rect width="2048" height="2048" rx="380" ry="380" fill="#354a4f" />
+    <rect width="2048" height="2048" rx="420" ry="420" fill="#354a4f" />
     <!-- Top-Left Cyan Bracket -->
     <path d="M 472 472 H 1066 V 552 H 552 V 1066 H 472 Z" fill="#00fefe" />
     <!-- Bottom-Right Cyan Bracket -->
@@ -25,12 +25,12 @@
     <path d="M 1808 1760 Q 1808 1808 1856 1808 Q 1808 1808 1808 1856 Q 1808 1808 1760 1808 Q 1808 1808 1808 1760 Z" fill="#737f82" />
   </g>
 
-  <!-- Typography: LOCKINRANK (Seamless, no space) -->
-  <text x="62" y="35" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="-0.5"><tspan fill="#0f172a">LOCKIN</tspan><tspan fill="url(#rankGradient)">RANK</tspan></text>
+  <!-- Typography: LOCKINRANK (Large, high-contrast, impactful) -->
+  <text x="47" y="31" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', Helvetica, Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="-0.5"><tspan fill="#0f172a">LOCKIN</tspan><tspan fill="url(#rankGradient)">RANK</tspan></text>
 
   <!-- Badge: SHOP -->
-  <g transform="translate(214, 17)">
-    <rect x="0" y="0" width="48" height="20" rx="5" fill="url(#badgeGradient)" />
-    <text x="24" y="14" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="1" fill="#ffffff" text-anchor="middle">SHOP</text>
+  <g transform="translate(216, 9)">
+    <rect x="0" y="0" width="54" height="24" rx="6" fill="url(#badgeGradient)" />
+    <text x="27" y="16.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="900" letter-spacing="1.2" fill="#ffffff" text-anchor="middle">SHOP</text>
   </g>
 </svg>

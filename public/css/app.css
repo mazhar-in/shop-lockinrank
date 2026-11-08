@@ -44,6 +44,14 @@ main.container {
     color: #0284c7 !important;
 }
 
+.brand-logo img,
+.logo-image {
+    height: 44px;
+    width: auto;
+    display: block;
+    max-width: 100%;
+}
+
 .brand-badge {
     background-color: #f59e0b;
     color: #ffffff !important;
@@ -858,28 +866,55 @@ a.nav-cart-btn:active,
         padding-bottom: calc(68px + env(safe-area-inset-bottom)) !important;
     }
 
-    /* Compact Mobile App Header */
+    /* Two-Row App Header on Mobile: Row 1 = Logo + Cart, Row 2 = Full Search */
     .site-nav {
-        padding: 0.4rem 0.75rem !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0.65rem 0.85rem !important;
+        row-gap: 0.5rem !important;
     }
-    .brand-logo img {
-        height: 28px !important;
+    .nav-brand-section {
+        order: 1 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .brand-logo img,
+    .logo-image {
+        height: 38px !important;
+        width: auto !important;
+    }
+    .nav-actions-section {
+        order: 2 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
     }
     .nav-link-desktop {
         display: none !important;
     }
     .nav-search {
-        margin: 0 0.5rem !important;
-        max-width: none !important;
+        order: 3 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0.2rem 0 0.1rem 0 !important;
+        flex: 0 0 100% !important;
     }
     .nav-search input {
-        font-size: 0.8rem !important;
-        height: 36px !important;
+        font-size: 0.85rem !important;
+        height: 38px !important;
         padding-left: 0.85rem !important;
+        border-radius: 8px !important;
+        margin-bottom: 0 !important;
     }
     .nav-cart-btn {
-        padding: 0.35rem 0.75rem !important;
-        font-size: 0.8rem !important;
+        padding: 0.4rem 0.85rem !important;
+        font-size: 0.82rem !important;
+        border-radius: 6px !important;
     }
 
     /* Mobile Bottom App Navigation Bar */
@@ -1231,6 +1266,10 @@ a.nav-cart-btn:active,
         padding-left: 0.75rem !important;
         padding-right: 0.75rem !important;
         padding-top: 0.85rem !important;
+    }
+    .brand-logo img,
+    .logo-image {
+        height: 36px !important;
     }
 }
 

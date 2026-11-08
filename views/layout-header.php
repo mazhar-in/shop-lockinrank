@@ -27,10 +27,10 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 
     <!-- Main Navigation Bar -->
     <nav class="site-nav container-fluid">
-        <ul>
+        <ul class="nav-brand-section">
             <li>
                 <a href="/" class="brand-logo" title="Lockinrank Shop">
-                    <img src="/images/lockinrank-logo.svg" alt="Lockinrank Shop" style="height: 38px; width: auto; display: block;">
+                    <img src="/images/lockinrank-logo.svg" alt="Lockinrank Shop" class="logo-image" style="height: 44px; width: auto; display: block;">
                 </a>
             </li>
         </ul>
@@ -47,7 +47,7 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                    hx-indicator="#search-loading">
         </div>
 
-        <ul style="gap: 0.75rem; align-items: center;">
+        <ul class="nav-actions-section" style="gap: 0.75rem; align-items: center;">
             <li>
                 <span id="search-loading" class="htmx-indicator" style="font-size: 0.85rem; color: #4f46e5;">
                     <i class="fa-solid fa-spinner fa-spin"></i>
