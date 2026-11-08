@@ -9,7 +9,7 @@ include __DIR__ . '/../layout-header.php';
     <p style="color: #64748b; font-size: 0.85rem;">Last Updated: October 2026</p>
 
     <p>
-        Welcome to <strong>Lockinrank Shop</strong> (hereinafter referred to as <em>"the Store"</em>, <em>"we"</em>, <em>"us"</em>, or <em>"our"</em>, operating under <strong>[Your Business / Brand Name]</strong>). 
+        Welcome to <strong>Lockinrank Shop</strong> (hereinafter referred to as <em>"the Store"</em>, <em>"we"</em>, <em>"us"</em>, or <em>"our"</em>, operating under <strong>LockInRank.com</strong>). 
         By accessing our website, purchasing, downloading, or using any digital teaching resources, worksheets, or lesson plans, you agree to comply with and be bound by the following Terms and Conditions.
     </p>
 
