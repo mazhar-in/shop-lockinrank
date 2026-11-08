@@ -522,10 +522,95 @@ class AdminController
     public static function deleteProduct($id)
     {
         self::checkAuth();
+        $id = (int)$id;
+        if ($id <= 0) {
+            $_SESSION['admin_flash_error'] = "Invalid product ID.";
+            Flight::redirect('/admin/products');
+            return;
+        }
+
         $db = Database::getConnection();
-        $stmt = $db->prepare("DELETE FROM products WHERE id = ?");
-        $stmt->execute([(int)$id]);
-        $_SESSION['admin_flash_success'] = "Resource deleted successfully.";
+        try {
+            $db->beginTransaction();
+
+            // 1. Delete associated reviews
+            $stmtRev = $db->prepare("DELETE FROM reviews WHERE product_id = ?");
+            $stmtRev->execute([$id]);
+
+            // 2. Delete associated order items
+            $stmtOi = $db->prepare("DELETE FROM order_items WHERE product_id = ?");
+            $stmtOi->execute([$id]);
+
+            // 3. Delete product
+            $stmtProd = $db->prepare("DELETE FROM products WHERE id = ?");
+            $stmtProd->execute([$id]);
+
+            $db->commit();
+            $_SESSION['admin_flash_success'] = "Resource #{$id} has been permanently deleted.";
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log("Failed to delete product #{$id}: " . $e->getMessage());
+            $_SESSION['admin_flash_error'] = "Failed to delete resource: " . $e->getMessage();
+        }
+
+        Flight::redirect('/admin/products');
+    }
+
+    public static function bulkDeleteProducts()
+    {
+        self::checkAuth();
+        $productIds = Flight::request()->data['product_ids'] ?? [];
+        if (!is_array($productIds) || empty($productIds)) {
+            $_SESSION['admin_flash_error'] = "No products were selected for bulk deletion.";
+            Flight::redirect('/admin/products');
+            return;
+        }
+
+        $cleanIds = [];
+        foreach ($productIds as $pid) {
+            $val = (int)$pid;
+            if ($val > 0) {
+                $cleanIds[] = $val;
+            }
+        }
+
+        if (empty($cleanIds)) {
+            $_SESSION['admin_flash_error'] = "No valid products selected.";
+            Flight::redirect('/admin/products');
+            return;
+        }
+
+        $db = Database::getConnection();
+        try {
+            $db->beginTransaction();
+
+            $placeholders = implode(',', array_fill(0, count($cleanIds), '?'));
+
+            // 1. Delete associated reviews
+            $stmtRev = $db->prepare("DELETE FROM reviews WHERE product_id IN ($placeholders)");
+            $stmtRev->execute($cleanIds);
+
+            // 2. Delete associated order items
+            $stmtOi = $db->prepare("DELETE FROM order_items WHERE product_id IN ($placeholders)");
+            $stmtOi->execute($cleanIds);
+
+            // 3. Delete products
+            $stmtProd = $db->prepare("DELETE FROM products WHERE id IN ($placeholders)");
+            $stmtProd->execute($cleanIds);
+
+            $count = count($cleanIds);
+            $db->commit();
+            $_SESSION['admin_flash_success'] = "Successfully deleted {$count} resource" . ($count > 1 ? 's' : '') . " in bulk.";
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log("Failed bulk deleting products: " . $e->getMessage());
+            $_SESSION['admin_flash_error'] = "Failed to delete selected resources: " . $e->getMessage();
+        }
+
         Flight::redirect('/admin/products');
     }
 

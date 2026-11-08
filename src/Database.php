@@ -111,47 +111,6 @@ class Database
         try { $pdo->exec("ALTER TABLE products ADD COLUMN sample_downloads INT DEFAULT 0"); } catch (\Throwable $e) {}
         try { $pdo->exec("ALTER TABLE products ADD COLUMN material_file_path TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
         try { $pdo->exec("ALTER TABLE products ADD COLUMN sample_file_path TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
-
-        // Ensure NEET course has sufficient companion resources for related course recommendations
-        try {
-            $neetCount = (int)$pdo->query("SELECT COUNT(*) FROM products WHERE grade = 'NEET (Medical)'")->fetchColumn();
-            if ($neetCount < 3) {
-                $storeId = (int)($pdo->query("SELECT id FROM stores LIMIT 1")->fetchColumn() ?: 1);
-                $ins = $pdo->prepare("
-                    INSERT INTO products 
-                    (store_id, title, slug, description, price, is_free, grade, board, subject, resource_type, file_format, page_count, is_ink_friendly, standards, thumbnail_url, preview_images, rating, review_count, sales_count)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ");
-                $ins->execute([
-                    $storeId,
-                    'NEET Physics 2026: 500 High-Yield Mechanics & Electrodynamics Questions',
-                    'neet-physics-500-high-yield-questions',
-                    'Targeted 500-question drill pack specifically calibrated for NEET medical entrance. Covers Kinematics, Laws of Motion, Work-Energy, Current Electricity, Magnetism, and Modern Physics with 100% NCERT-based step-by-step solutions.',
-                    179.00, 0, 'NEET (Medical)', 'NEET / NTA Pattern', 'Physics', 'Unit Plan', 'PDF (Printable)', 52, 1,
-                    'NEET NTA Physics Syllabus (Class 11 & 12)',
-                    'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80',
-                    json_encode([
-                        'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&auto=format&fit=crop&q=80'
-                    ]),
-                    4.9, 94, 620
-                ]);
-                $ins->execute([
-                    $storeId,
-                    'NEET Chemistry: NCERT Line-by-Line Organic & Inorganic Reaction Roadmaps',
-                    'neet-chemistry-ncert-reaction-roadmaps',
-                    'Master all organic reaction mechanisms, named reactions, and inorganic trend charts from NCERT Class 11 & 12. Includes high-yield conversion pathways, acid-base strength orders, and reagent comparison tables.',
-                    149.00, 0, 'NEET (Medical)', 'NEET / NTA Pattern', 'Chemistry', 'Worksheet', 'PDF (Printable)', 46, 1,
-                    '100% NCERT Line-by-Line Chemistry for NEET',
-                    'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=600&auto=format&fit=crop&q=80',
-                    json_encode([
-                        'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=600&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80'
-                    ]),
-                    4.8, 76, 510
-                ]);
-            }
-        } catch (\Throwable $e) {}
     }
 
     private static function migrateAndSeed(PDO $db): void
