@@ -26,6 +26,7 @@ Flight::route('GET /search', [HomeController::class, 'search']);
 
 // --- Product Details & Watermarked Preview ---
 Flight::route('GET /product/@slug:[a-zA-Z0-9_-]+', [ProductController::class, 'show']);
+Flight::route('POST /product/review', [ProductController::class, 'submitReview']);
 Flight::route('GET /product/preview/@id:[0-9]+', [ProductController::class, 'quickPreview']);
 Flight::route('GET /product/sample/@id:[0-9]+', [ProductController::class, 'downloadSample']);
 

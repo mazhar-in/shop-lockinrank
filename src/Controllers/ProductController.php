@@ -30,6 +30,30 @@ class ProductController
         $revStmt->execute([$product['id']]);
         $reviews = $revStmt->fetchAll();
 
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Generate Math Challenge for Anti-Spam verification
+        $captchaN1 = rand(2, 9);
+        $captchaN2 = rand(1, 9);
+        $_SESSION['review_captcha_num1'] = $captchaN1;
+        $_SESSION['review_captcha_num2'] = $captchaN2;
+        $_SESSION['review_captcha_answer'] = $captchaN1 + $captchaN2;
+        $_SESSION['review_form_time'] = time();
+        if (empty($_SESSION['review_token'])) {
+            $_SESSION['review_token'] = bin2hex(random_bytes(16));
+        }
+
+        // Calculate rating breakdown (counts of 5, 4, 3, 2, 1 stars)
+        $starBreakdown = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
+        foreach ($reviews as $r) {
+            $val = (int)($r['rating'] ?? 5);
+            if (isset($starBreakdown[$val])) {
+                $starBreakdown[$val]++;
+            }
+        }
+
         // Get related products prioritizing the same course / exam
         $related = [];
         try {
@@ -80,8 +104,152 @@ class ProductController
             'product' => $product,
             'reviews' => $reviews,
             'related' => $related,
-            'previewImages' => array_values(array_filter($previewImages))
+            'previewImages' => array_values(array_filter($previewImages)),
+            'captchaNum1' => $captchaN1,
+            'captchaNum2' => $captchaN2,
+            'starBreakdown' => $starBreakdown
         ]);
+    }
+
+    public static function submitReview()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $req = Flight::request()->data;
+        $productId = (int)($req['product_id'] ?? 0);
+        $slug = trim($req['product_slug'] ?? '');
+        $redirectUrl = !empty($slug) ? "/product/{$slug}#reviews" : "/";
+
+        $db = Database::getConnection();
+
+        // Check product exists
+        $stmt = $db->prepare("SELECT id, slug FROM products WHERE id = ?");
+        $stmt->execute([$productId]);
+        $product = $stmt->fetch();
+        if (!$product) {
+            $_SESSION['review_flash_error'] = "Product not found.";
+            Flight::redirect('/');
+            return;
+        }
+
+        // --- SPAM PROTECTION 1: Honeypot Trap ---
+        if (!empty($req['hp_website'])) {
+            error_log("Spam blocked: Honeypot field filled for product #{$productId}");
+            $_SESSION['review_flash_error'] = "Spam submission detected.";
+            Flight::redirect($redirectUrl);
+            return;
+        }
+
+        // --- SPAM PROTECTION 2: Time-Trap (Minimum 3 seconds between page view and submission) ---
+        $formTime = (int)($_SESSION['review_form_time'] ?? 0);
+        if ($formTime <= 0 || (time() - $formTime) < 3) {
+            $_SESSION['review_flash_error'] = "Review submitted too quickly. Please take a moment to write your review.";
+            Flight::redirect($redirectUrl);
+            return;
+        }
+
+        // --- SPAM PROTECTION 3: Anti-Spam Math Challenge Verification ---
+        $expectedAnswer = (int)($_SESSION['review_captcha_answer'] ?? -999);
+        $userAnswer = (int)trim($req['captcha_answer'] ?? '');
+        if ($userAnswer !== $expectedAnswer) {
+            $_SESSION['review_flash_error'] = "Verification failed: The math answer was incorrect. Please try again.";
+            Flight::redirect($redirectUrl);
+            return;
+        }
+
+        // --- SPAM PROTECTION 4: Flood Control / Rate Limiting (60s between reviews) ---
+        $lastSubmit = (int)($_SESSION['last_review_submit_time'] ?? 0);
+        if ($lastSubmit > 0 && (time() - $lastSubmit) < 60) {
+            $_SESSION['review_flash_error'] = "You recently submitted a review. Please wait 60 seconds before posting another.";
+            Flight::redirect($redirectUrl);
+            return;
+        }
+
+        // --- SPAM PROTECTION 5: Link, Keyword & Blacklist Filtering ---
+        $authorName = trim(strip_tags($req['author_name'] ?? ''));
+        $comment = trim(strip_tags($req['comment'] ?? ''));
+        $role = trim(strip_tags($req['author_role'] ?? 'Verified Student'));
+        $rating = (int)($req['rating'] ?? 5);
+
+        $spamPattern = '/https?:\/\/|www\.|t\.me\/|wa\.me\/|\.xyz|\.top|\.ru|free\s*crypto|casino|viagra|porn|bit\.ly/i';
+        if (preg_match($spamPattern, $comment) || preg_match($spamPattern, $authorName)) {
+            $_SESSION['review_flash_error'] = "Reviews containing external links, promotional URLs, or spam phrases are prohibited.";
+            Flight::redirect($redirectUrl);
+            return;
+        }
+
+        // Name validation
+        if (mb_strlen($authorName) < 2 || mb_strlen($authorName) > 60) {
+            $_SESSION['review_flash_error'] = "Please provide a valid name between 2 and 60 characters.";
+            Flight::redirect($redirectUrl);
+            return;
+        }
+
+        // Comment validation
+        if (mb_strlen($comment) < 10) {
+            $_SESSION['review_flash_error'] = "Review feedback is too short. Please write at least 10 characters.";
+            Flight::redirect($redirectUrl);
+            return;
+        }
+        if (mb_strlen($comment) > 1000) {
+            $_SESSION['review_flash_error'] = "Review feedback exceeds the 1,000 character maximum limit.";
+            Flight::redirect($redirectUrl);
+            return;
+        }
+
+        // Clamp rating 1 to 5
+        if ($rating < 1) $rating = 1;
+        if ($rating > 5) $rating = 5;
+
+        // Role clamp
+        $allowedRoles = ['Verified Student', 'Verified Educator', 'Verified Parent'];
+        if (!in_array($role, $allowedRoles, true)) {
+            $role = 'Verified Student';
+        }
+
+        try {
+            $now = date('Y-m-d H:i:s');
+            // Save review
+            $ins = $db->prepare("
+                INSERT INTO reviews (product_id, author_name, author_role, rating, comment, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ");
+            $ins->execute([$productId, $authorName, $role, $rating, $comment, $now]);
+
+            // Recompute product rating & review_count
+            $agg = $db->prepare("SELECT COUNT(*) as cnt, AVG(rating) as avg_r FROM reviews WHERE product_id = ?");
+            $agg->execute([$productId]);
+            $stats = $agg->fetch();
+            $newCount = (int)($stats['cnt'] ?? 0);
+            $newAvg = round((float)($stats['avg_r'] ?? 5.0), 1);
+
+            $upd = $db->prepare("UPDATE products SET rating = ?, review_count = ? WHERE id = ?");
+            $upd->execute([$newAvg, $newCount, $productId]);
+
+            // Update store total_reviews if store exists
+            try {
+                $storeUpd = $db->prepare("
+                    UPDATE stores SET 
+                        total_reviews = (SELECT COUNT(*) FROM reviews r JOIN products p ON r.product_id = p.id WHERE p.store_id = stores.id),
+                        rating = ROUND((SELECT AVG(r.rating) FROM reviews r JOIN products p ON r.product_id = p.id WHERE p.store_id = stores.id), 2)
+                    WHERE id = (SELECT store_id FROM products WHERE id = ?)
+                ");
+                $storeUpd->execute([$productId]);
+            } catch (\Throwable $storeErr) {}
+
+            // Set rate limit timestamp & reset captcha
+            $_SESSION['last_review_submit_time'] = time();
+            unset($_SESSION['review_captcha_answer']);
+
+            $_SESSION['review_flash_success'] = "Thank you! Your verified review has been posted successfully.";
+        } catch (\Throwable $e) {
+            error_log("Failed to insert review: " . $e->getMessage());
+            $_SESSION['review_flash_error'] = "An error occurred while saving your review. Please try again.";
+        }
+
+        Flight::redirect($redirectUrl);
     }
 
     public static function quickPreview($id)

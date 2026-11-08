@@ -111,6 +111,9 @@ class Database
         try { $pdo->exec("ALTER TABLE products ADD COLUMN sample_downloads INT DEFAULT 0"); } catch (\Throwable $e) {}
         try { $pdo->exec("ALTER TABLE products ADD COLUMN material_file_path TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
         try { $pdo->exec("ALTER TABLE products ADD COLUMN sample_file_path TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
+
+        // Ensure columns in reviews exist
+        try { $pdo->exec("ALTER TABLE reviews ADD COLUMN author_role VARCHAR(50) DEFAULT 'Verified Student'"); } catch (\Throwable $e) {}
     }
 
     private static function migrateAndSeed(PDO $db): void
