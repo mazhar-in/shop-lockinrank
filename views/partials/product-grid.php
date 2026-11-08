@@ -30,6 +30,20 @@
                     <span style="color: #475569; font-weight: 500;">By <?= htmlspecialchars($p['store_name'] ?? 'Lockinrank Academic Team') ?></span>
                 </div>
 
+                <?php if (!empty($p['tags'])): 
+                    $cardTags = array_slice(array_filter(array_map('trim', explode(',', $p['tags']))), 0, 3);
+                ?>
+                    <?php if (!empty($cardTags)): ?>
+                        <div style="display: flex; gap: 0.3rem; flex-wrap: wrap; margin: 0.35rem 0;">
+                            <?php foreach ($cardTags as $ct): ?>
+                                <a href="/?tag=<?= urlencode($ct) ?>" style="font-size: 0.68rem; font-weight: 700; color: #4338ca; background: #eef2ff; border: 1px solid #c7d2fe; padding: 0.1rem 0.4rem; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.2rem;">
+                                    #<?= htmlspecialchars($ct) ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
+
                 <div class="rating-stars">
                     <?php
                     $fullStars = floor($p['rating']);

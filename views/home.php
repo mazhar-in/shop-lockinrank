@@ -65,6 +65,21 @@ include __DIR__ . '/layout-header.php';
                 </div>
             </div>
 
+            <?php if (!empty($categories)): ?>
+            <!-- Category Select -->
+            <div class="filter-group">
+                <label for="category-select" style="font-size: 0.85rem; font-weight: 700;">Curriculum Category</label>
+                <select id="category-select" name="category" style="font-size: 0.85rem; color: #0f172a; background-color: #ffffff;">
+                    <option value="">All Categories</option>
+                    <?php foreach ($categories as $cat): ?>
+                        <option value="<?= htmlspecialchars($cat['slug']) ?>" <?= (!empty($selectedCategory) && ($selectedCategory === $cat['slug'] || $selectedCategory == $cat['id'])) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($cat['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <?php endif; ?>
+
             <!-- Target Exam Select -->
             <div class="filter-group">
                 <label for="class-select" style="font-size: 0.85rem; font-weight: 700;">Target Exam / Course</label>
@@ -171,6 +186,15 @@ include __DIR__ . '/layout-header.php';
                 </span>
             </div>
         </div>
+
+        <?php if (!empty($selectedTag)): ?>
+            <div style="background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.88rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;">
+                <span><i class="fa-solid fa-tag" style="color: #4f46e5;"></i> Filtered by Tag: <strong>#<?= htmlspecialchars($selectedTag) ?></strong></span>
+                <a href="/" style="background: #ffffff; color: #dc2626; border: 1px solid #fca5a5; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.78rem; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    Clear Filter <i class="fa-solid fa-xmark"></i>
+                </a>
+            </div>
+        <?php endif; ?>
 
         <!-- The HTMX Target Grid -->
         <div id="product-grid" class="product-grid">

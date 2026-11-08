@@ -50,6 +50,21 @@
                 </div>
 
                 <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <!-- Resource Category -->
+                    <div>
+                        <label for="category_id" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.4rem;">
+                            Resource Category
+                        </label>
+                        <select id="category_id" name="category_id" style="font-size: 0.95rem;">
+                            <option value="">-- No Category Assigned --</option>
+                            <?php foreach ($categories as $cat): ?>
+                                <option value="<?= $cat['id'] ?>" <?= ((int)($product['category_id'] ?? 0) === (int)$cat['id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($cat['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
                     <!-- Target Exam -->
                     <div>
                         <label for="grade" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.4rem;">
@@ -63,7 +78,9 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
+                </div>
 
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                     <!-- Curriculum Board -->
                     <div>
                         <label for="board" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.4rem;">
@@ -77,7 +94,6 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
-                </div>
 
                 <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
                     <!-- Subject -->
@@ -160,6 +176,15 @@
                         Curriculum Reference / Chapter Alignment
                     </label>
                     <input type="text" id="standards" name="standards" value="<?= htmlspecialchars($product['standards'] ?? '') ?>" placeholder="e.g. NTA JEE Main Syllabus Section 2" style="font-size: 0.95rem;">
+                </div>
+
+                <!-- Clickable Product Tags -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="tags" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.4rem;">
+                        <i class="fa-solid fa-tags" style="color: #4f46e5;"></i> Product Tags (Clickable in Store)
+                    </label>
+                    <input type="text" id="tags" name="tags" value="<?= htmlspecialchars($product['tags'] ?? '') ?>" placeholder="e.g. Mechanics, Rotation, Angular Momentum, JEE Advanced, High Yield" style="font-size: 0.95rem; margin-bottom: 0.25rem;">
+                    <small style="color: #64748b; font-size: 0.78rem;">Enter comma-separated keywords. These will appear as clickable tag chips on the product page and allow students to filter related topics instantly.</small>
                 </div>
 
                 <!-- Digital Resource Downloads (Full Material & Sample File) -->

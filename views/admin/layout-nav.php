@@ -42,6 +42,9 @@ $activeTab = $activeTab ?? 'dashboard';
             <a href="/admin/products" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; border-radius: 6px; font-size: 0.9rem; font-weight: 700; text-decoration: none; transition: all 0.15s ease; <?= $activeTab === 'products' ? 'background: #4f46e5; color: #ffffff !important;' : 'color: #94a3b8;' ?>">
                 <i class="fa-solid fa-cubes"></i> Products
             </a>
+            <a href="/admin/categories" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; border-radius: 6px; font-size: 0.9rem; font-weight: 700; text-decoration: none; transition: all 0.15s ease; <?= $activeTab === 'categories' ? 'background: #4f46e5; color: #ffffff !important;' : 'color: #94a3b8;' ?>">
+                <i class="fa-solid fa-folder-tree"></i> Categories
+            </a>
             <a href="/admin/orders" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; border-radius: 6px; font-size: 0.9rem; font-weight: 700; text-decoration: none; transition: all 0.15s ease; <?= $activeTab === 'orders' ? 'background: #4f46e5; color: #ffffff !important;' : 'color: #94a3b8;' ?>">
                 <i class="fa-solid fa-receipt"></i> Orders
             </a>

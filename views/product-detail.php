@@ -190,7 +190,7 @@ include __DIR__ . '/layout-header.php';
         </div>
 
         <!-- Rating & Sales -->
-        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; font-size: 0.9rem;">
             <span style="color: var(--tpt-orange); font-weight: 700;">
                 <i class="fa-solid fa-star"></i> <?= number_format($product['rating'], 1) ?>
             </span>
@@ -208,6 +208,24 @@ include __DIR__ . '/layout-header.php';
                 </span>
             <?php endif; ?>
         </div>
+
+        <!-- Clickable Product Tags -->
+        <?php if (!empty($product['tags'])): 
+            $tagList = array_filter(array_map('trim', explode(',', $product['tags'])));
+        ?>
+            <?php if (!empty($tagList)): ?>
+                <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+                    <span style="font-size: 0.78rem; font-weight: 800; color: #64748b; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.25rem;">
+                        <i class="fa-solid fa-tags" style="color: #4f46e5;"></i> Tags:
+                    </span>
+                    <?php foreach ($tagList as $t): ?>
+                        <a href="/?tag=<?= urlencode($t) ?>" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.15s ease;">
+                            #<?= htmlspecialchars($t) ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
 
         <!-- Price & Buy Box -->
         <div style="background-color: var(--pico-card-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
@@ -278,6 +296,20 @@ include __DIR__ . '/layout-header.php';
                     <tr>
                         <td style="color: var(--pico-muted-color);"><strong>Curriculum Link:</strong></td>
                         <td><mark><?= htmlspecialchars($product['standards']) ?></mark></td>
+                    </tr>
+                    <?php endif; ?>
+                    <?php if (!empty($product['tags'])): ?>
+                    <tr>
+                        <td style="color: var(--pico-muted-color);"><strong>Topic Tags:</strong></td>
+                        <td>
+                            <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                                <?php foreach (array_filter(array_map('trim', explode(',', $product['tags']))) as $t): ?>
+                                    <a href="/?tag=<?= urlencode($t) ?>" style="font-size: 0.75rem; background: #eef2ff; color: #4338ca; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-decoration: none; border: 1px solid #c7d2fe;">
+                                        #<?= htmlspecialchars($t) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </td>
                     </tr>
                     <?php endif; ?>
                 </tbody>

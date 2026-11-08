@@ -46,6 +46,10 @@ Flight::route('GET /download/@token:[a-zA-Z0-9_-]+', [CartController::class, 'do
 Flight::route('GET /admin', [AdminController::class, 'dashboard']);
 Flight::route('GET /admin/dashboard', [AdminController::class, 'dashboard']);
 Flight::route('GET /admin/products', [AdminController::class, 'products']);
+Flight::route('GET /admin/categories', [AdminController::class, 'categories']);
+Flight::route('POST /admin/category/create', [AdminController::class, 'createCategory']);
+Flight::route('POST /admin/category/edit/@id:[0-9]+', [AdminController::class, 'updateCategory']);
+Flight::route('GET|POST /admin/category/delete/@id:[0-9]+', [AdminController::class, 'deleteCategory']);
 Flight::route('GET /admin/orders', [AdminController::class, 'orders']);
 Flight::route('GET /admin/customers', [AdminController::class, 'customers']);
 Flight::route('GET /admin/customer', [AdminController::class, 'customerDetail']);

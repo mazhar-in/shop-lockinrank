@@ -111,9 +111,85 @@ class Database
         try { $pdo->exec("ALTER TABLE products ADD COLUMN sample_downloads INT DEFAULT 0"); } catch (\Throwable $e) {}
         try { $pdo->exec("ALTER TABLE products ADD COLUMN material_file_path TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
         try { $pdo->exec("ALTER TABLE products ADD COLUMN sample_file_path TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE products ADD COLUMN category_id INT DEFAULT NULL"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE products ADD COLUMN tags TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
 
         // Ensure columns in reviews exist
         try { $pdo->exec("ALTER TABLE reviews ADD COLUMN author_role VARCHAR(50) DEFAULT 'Verified Student'"); } catch (\Throwable $e) {}
+
+        // Ensure categories table exists
+        try {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS categories (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    slug TEXT UNIQUE NOT NULL,
+                    description TEXT DEFAULT NULL,
+                    icon TEXT DEFAULT 'fa-solid fa-folder',
+                    display_order INTEGER DEFAULT 0,
+                    is_active INTEGER DEFAULT 1,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
+        } catch (\Throwable $e) {
+            try {
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS `categories` (
+                        `id` INT AUTO_INCREMENT PRIMARY KEY,
+                        `name` VARCHAR(255) NOT NULL,
+                        `slug` VARCHAR(255) NOT NULL UNIQUE,
+                        `description` TEXT DEFAULT NULL,
+                        `icon` VARCHAR(100) DEFAULT 'fa-solid fa-folder',
+                        `display_order` INT DEFAULT 0,
+                        `is_active` TINYINT(1) DEFAULT 1,
+                        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ");
+            } catch (\Throwable $e2) {}
+        }
+
+        // Seed initial categories if none exist
+        try {
+            $catCount = (int)$pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
+            if ($catCount === 0) {
+                $initialCategories = [
+                    ['JEE Main & Advanced', 'jee-main-advanced', 'Comprehensive problem sets, rotation mechanics, calculus drills, and formula guides calibrated for IIT JEE.', 'fa-solid fa-atom', 1],
+                    ['NEET (Medical)', 'neet-medical', 'High-yield NCERT diagram cheatsheets, biology DPPs, and chemistry reaction mechanisms.', 'fa-solid fa-dna', 2],
+                    ['CBSE Class 11-12', 'cbse-class-11-12', 'Board exam question banks, derivations, NCERT textbook solutions, and printable cheatsheets.', 'fa-solid fa-graduation-cap', 3],
+                    ['CBSE Class 9-10', 'cbse-class-9-10', 'Foundation physics, ray diagrams, light and electricity practice sheets for secondary school.', 'fa-solid fa-book-open', 4],
+                    ['AP Physics (College Board)', 'ap-physics', 'Calculus and algebra-based AP Physics 1 & AP Physics C unit packs with FRQs.', 'fa-solid fa-globe', 5],
+                    ['Olympiad & Competitive', 'olympiad-competitive', 'Advanced non-routine problem solving toolkit for NSEP, INPhO, and competitive science contests.', 'fa-solid fa-trophy', 6],
+                    ['Formulas & Cheatsheets', 'formulas-cheatsheets', 'Compact pocket revision cards, mind maps, and quick summary tables for rapid revision.', 'fa-solid fa-bolt', 7]
+                ];
+                $insCat = $pdo->prepare("INSERT INTO categories (name, slug, description, icon, display_order) VALUES (?, ?, ?, ?, ?)");
+                foreach ($initialCategories as $c) {
+                    $insCat->execute($c);
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        // Auto-assign category_id and initial tags to existing products if unassigned
+        try {
+            $pdo->exec("UPDATE products SET category_id = (SELECT id FROM categories WHERE categories.name = products.grade LIMIT 1) WHERE category_id IS NULL OR category_id = 0");
+            $pdo->exec("UPDATE products SET category_id = (SELECT id FROM categories WHERE slug = 'ap-physics') WHERE (category_id IS NULL OR category_id = 0) AND (grade LIKE '%AP%' OR title LIKE '%AP%')");
+            $pdo->exec("UPDATE products SET category_id = (SELECT id FROM categories WHERE slug = 'jee-main-advanced') WHERE (category_id IS NULL OR category_id = 0) AND (grade LIKE '%JEE%' OR title LIKE '%JEE%')");
+            $pdo->exec("UPDATE products SET category_id = (SELECT id FROM categories WHERE slug = 'neet-medical') WHERE (category_id IS NULL OR category_id = 0) AND (grade LIKE '%NEET%' OR title LIKE '%NEET%')");
+            $pdo->exec("UPDATE products SET category_id = (SELECT id FROM categories WHERE slug = 'cbse-class-11-12') WHERE (category_id IS NULL OR category_id = 0) AND grade LIKE '%11-12%'");
+            $pdo->exec("UPDATE products SET category_id = (SELECT id FROM categories WHERE slug = 'cbse-class-9-10') WHERE (category_id IS NULL OR category_id = 0) AND grade LIKE '%9-10%'");
+            $pdo->exec("UPDATE products SET category_id = (SELECT id FROM categories WHERE slug = 'olympiad-competitive') WHERE (category_id IS NULL OR category_id = 0) AND grade LIKE '%Olympiad%'");
+
+            // Seed sample tags if tags is null or empty
+            $pdo->exec("UPDATE products SET tags = 'Mechanics, Rotation, Angular Momentum, JEE Advanced, High Yield' WHERE (tags IS NULL OR tags = '') AND title LIKE '%Mechanics%'");
+            $pdo->exec("UPDATE products SET tags = 'NCERT, Human Physiology, Genetics, Diagrams, NEET 2026' WHERE (tags IS NULL OR tags = '') AND title LIKE '%NEET Biology%'");
+            $pdo->exec("UPDATE products SET tags = 'Organic Chemistry, Reaction Roadmaps, NCERT Line-by-Line, Chemistry' WHERE (tags IS NULL OR tags = '') AND title LIKE '%NEET Chemistry%'");
+            $pdo->exec("UPDATE products SET tags = 'Calculus, Electrodynamics, Gauss Law, College Board, AP Physics' WHERE (tags IS NULL OR tags = '') AND title LIKE '%AP Physics C%'");
+            $pdo->exec("UPDATE products SET tags = 'Kinematics, Dynamics, Energy, FRQ, AP Physics 1' WHERE (tags IS NULL OR tags = '') AND title LIKE '%AP Physics 1%'");
+            $pdo->exec("UPDATE products SET tags = 'Formulas, Quick Revision, Freebie, Class 12, Class 11, Cheat Sheet' WHERE (tags IS NULL OR tags = '') AND title LIKE '%Formula Master%'");
+            $pdo->exec("UPDATE products SET tags = 'Calculus, Definite Integrals, Speed Drills, Mathematics, JEE Main' WHERE (tags IS NULL OR tags = '') AND title LIKE '%Calculus & Algebra Drills%'");
+            $pdo->exec("UPDATE products SET tags = 'Ray Optics, Electricity, Class 10, Freebie, NCERT Diagrams' WHERE (tags IS NULL OR tags = '') AND title LIKE '%Class 10 Light%'");
+            $pdo->exec("UPDATE products SET tags = 'Olympiad, NSEP, INPhO, Non-Routine Problems, Advanced Physics' WHERE (tags IS NULL OR tags = '') AND title LIKE '%Olympiad%'");
+            $pdo->exec("UPDATE products SET tags = 'Physics, Study Notes, Question Bank, Lockinrank' WHERE tags IS NULL OR tags = ''");
+        } catch (\Throwable $e) {}
     }
 
     private static function migrateAndSeed(PDO $db): void

@@ -160,6 +160,8 @@ class AdminController
         $db = Database::getConnection();
         $store = $db->query("SELECT * FROM stores ORDER BY id ASC LIMIT 1")->fetch();
 
+        $categories = $db->query("SELECT * FROM categories WHERE is_active = 1 ORDER BY display_order ASC, name ASC")->fetchAll();
+
         $targetExams = [
             'JEE Main & Advanced',
             'NEET (Medical)',
@@ -191,6 +193,7 @@ class AdminController
 
         Flight::render('admin/upload', [
             'store' => $store,
+            'categories' => $categories,
             'targetExams' => $targetExams,
             'boards' => $boards,
             'subjects' => $subjects,
@@ -291,6 +294,8 @@ class AdminController
         $pageCount = (int)(Flight::request()->data['page_count'] ?? 25);
         $inkFriendly = isset(Flight::request()->data['is_ink_friendly']) ? 1 : 0;
         $standards = Flight::request()->data['standards'] ?? '';
+        $categoryId = !empty(Flight::request()->data['category_id']) ? (int)Flight::request()->data['category_id'] : null;
+        $tags = trim(strip_tags(Flight::request()->data['tags'] ?? ''));
 
         // Process uploaded image files
         $uploadedImages = self::handleUploadedImages();
@@ -335,14 +340,17 @@ class AdminController
         $store = $db->query("SELECT id FROM stores ORDER BY id ASC LIMIT 1")->fetch();
         $storeId = $store['id'] ?? 1;
 
+        $categoryId = !empty(Flight::request()->data['category_id']) ? (int)Flight::request()->data['category_id'] : null;
+        $tags = trim(strip_tags(Flight::request()->data['tags'] ?? ''));
+
         $stmt = $db->prepare("
             INSERT INTO products 
-            (store_id, title, slug, description, price, is_free, grade, board, subject, resource_type, file_format, page_count, is_ink_friendly, standards, thumbnail_url, preview_images, material_file_path, sample_file_path, rating, review_count, sales_count, sample_downloads)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 5.0, 0, 0, 0)
+            (store_id, title, slug, description, price, is_free, grade, board, subject, resource_type, file_format, page_count, is_ink_friendly, standards, thumbnail_url, preview_images, material_file_path, sample_file_path, category_id, tags, rating, review_count, sales_count, sample_downloads)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 5.0, 0, 0, 0)
         ");
 
         $stmt->execute([
-            $storeId, $title, $slug, $description, $price, $isFree, $exam, $board, $subject, $type, $format, $pageCount, $inkFriendly, $standards, $thumbnail, $previewImages, $materialFilePath, $sampleFilePath
+            $storeId, $title, $slug, $description, $price, $isFree, $exam, $board, $subject, $type, $format, $pageCount, $inkFriendly, $standards, $thumbnail, $previewImages, $materialFilePath, $sampleFilePath, $categoryId, $tags
         ]);
 
         Flight::redirect('/admin');
@@ -394,8 +402,11 @@ class AdminController
             'Science & Math Foundation'
         ];
 
+        $categories = $db->query("SELECT * FROM categories ORDER BY display_order ASC, name ASC")->fetchAll();
+
         Flight::render('admin/edit', [
             'product' => $product,
+            'categories' => $categories,
             'previewImages' => $previewImages,
             'targetExams' => $targetExams,
             'boards' => $boards,
@@ -432,6 +443,8 @@ class AdminController
         $pageCount = (int)(Flight::request()->data['page_count'] ?? $existing['page_count']);
         $inkFriendly = isset(Flight::request()->data['is_ink_friendly']) ? 1 : 0;
         $standards = Flight::request()->data['standards'] ?? '';
+        $categoryId = !empty(Flight::request()->data['category_id']) ? (int)Flight::request()->data['category_id'] : null;
+        $tags = trim(strip_tags(Flight::request()->data['tags'] ?? ''));
 
         // Existing kept images from checkboxes/form
         $keptImages = Flight::request()->data['kept_images'] ?? [];
@@ -508,15 +521,18 @@ class AdminController
                 thumbnail_url = ?,
                 preview_images = ?,
                 material_file_path = ?,
-                sample_file_path = ?
+                sample_file_path = ?,
+                category_id = ?,
+                tags = ?
             WHERE id = ?
         ");
 
         $updateStmt->execute([
-            $title, $description, $price, $isFree, $exam, $board, $subject, $type, $format, $pageCount, $inkFriendly, $standards, $thumbnail, $previewImages, $materialFilePath, $sampleFilePath, (int)$id
+            $title, $description, $price, $isFree, $exam, $board, $subject, $type, $format, $pageCount, $inkFriendly, $standards, $thumbnail, $previewImages, $materialFilePath, $sampleFilePath, $categoryId, $tags, (int)$id
         ]);
 
-        Flight::redirect('/admin');
+        $_SESSION['admin_flash_success'] = "Resource updated successfully.";
+        Flight::redirect('/admin/products');
     }
 
     public static function deleteProduct($id)
@@ -612,6 +628,152 @@ class AdminController
         }
 
         Flight::redirect('/admin/products');
+    }
+
+    public static function categories()
+    {
+        self::checkAuth();
+        $db = Database::getConnection();
+
+        $stmt = $db->query("
+            SELECT c.*, COUNT(p.id) as product_count 
+            FROM categories c 
+            LEFT JOIN products p ON p.category_id = c.id 
+            GROUP BY c.id 
+            ORDER BY c.display_order ASC, c.name ASC
+        ");
+        $categories = $stmt->fetchAll();
+
+        Flight::render('admin/categories', [
+            'categories' => $categories,
+            'pageTitle' => 'Curriculum Categories — Lockinrank Control Panel'
+        ]);
+    }
+
+    public static function createCategory()
+    {
+        self::checkAuth();
+        $name = trim(Flight::request()->data['name'] ?? '');
+        $slug = trim(Flight::request()->data['slug'] ?? '');
+        $description = trim(Flight::request()->data['description'] ?? '');
+        $icon = trim(Flight::request()->data['icon'] ?? 'fa-solid fa-folder');
+        $displayOrder = (int)(Flight::request()->data['display_order'] ?? 0);
+        $isActive = isset(Flight::request()->data['is_active']) ? 1 : 0;
+
+        if (empty($name)) {
+            $_SESSION['admin_flash_error'] = "Category name is required.";
+            Flight::redirect('/admin/categories');
+            return;
+        }
+
+        if (empty($slug)) {
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+        } else {
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $slug)));
+        }
+
+        if (empty($icon)) {
+            $icon = 'fa-solid fa-folder';
+        }
+
+        $db = Database::getConnection();
+        try {
+            $stmt = $db->prepare("
+                INSERT INTO categories (name, slug, description, icon, display_order, is_active, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([$name, $slug, $description, $icon, $displayOrder, $isActive, date('Y-m-d H:i:s')]);
+            $_SESSION['admin_flash_success'] = "Category '{$name}' created successfully.";
+        } catch (\Throwable $e) {
+            error_log("Failed to create category: " . $e->getMessage());
+            $_SESSION['admin_flash_error'] = "Failed to create category: " . (str_contains($e->getMessage(), 'UNIQUE') ? 'A category with this slug already exists.' : $e->getMessage());
+        }
+
+        Flight::redirect('/admin/categories');
+    }
+
+    public static function updateCategory($id)
+    {
+        self::checkAuth();
+        $id = (int)$id;
+        $name = trim(Flight::request()->data['name'] ?? '');
+        $slug = trim(Flight::request()->data['slug'] ?? '');
+        $description = trim(Flight::request()->data['description'] ?? '');
+        $icon = trim(Flight::request()->data['icon'] ?? 'fa-solid fa-folder');
+        $displayOrder = (int)(Flight::request()->data['display_order'] ?? 0);
+        $isActive = isset(Flight::request()->data['is_active']) ? 1 : 0;
+
+        if (empty($name)) {
+            $_SESSION['admin_flash_error'] = "Category name cannot be empty.";
+            Flight::redirect('/admin/categories');
+            return;
+        }
+
+        if (empty($slug)) {
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+        } else {
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $slug)));
+        }
+
+        if (empty($icon)) {
+            $icon = 'fa-solid fa-folder';
+        }
+
+        $db = Database::getConnection();
+        try {
+            $stmt = $db->prepare("
+                UPDATE categories SET
+                    name = ?,
+                    slug = ?,
+                    description = ?,
+                    icon = ?,
+                    display_order = ?,
+                    is_active = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([$name, $slug, $description, $icon, $displayOrder, $isActive, $id]);
+            $_SESSION['admin_flash_success'] = "Category '{$name}' updated successfully.";
+        } catch (\Throwable $e) {
+            error_log("Failed to update category: " . $e->getMessage());
+            $_SESSION['admin_flash_error'] = "Failed to update category: " . (str_contains($e->getMessage(), 'UNIQUE') ? 'A category with this slug already exists.' : $e->getMessage());
+        }
+
+        Flight::redirect('/admin/categories');
+    }
+
+    public static function deleteCategory($id)
+    {
+        self::checkAuth();
+        $id = (int)$id;
+        if ($id <= 0) {
+            $_SESSION['admin_flash_error'] = "Invalid category ID.";
+            Flight::redirect('/admin/categories');
+            return;
+        }
+
+        $db = Database::getConnection();
+        try {
+            $db->beginTransaction();
+
+            // Unassign products referencing this category
+            $unassignStmt = $db->prepare("UPDATE products SET category_id = NULL WHERE category_id = ?");
+            $unassignStmt->execute([$id]);
+
+            // Delete category
+            $delStmt = $db->prepare("DELETE FROM categories WHERE id = ?");
+            $delStmt->execute([$id]);
+
+            $db->commit();
+            $_SESSION['admin_flash_success'] = "Category deleted successfully. Associated products have been unassigned.";
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log("Failed to delete category: " . $e->getMessage());
+            $_SESSION['admin_flash_error'] = "Failed to delete category: " . $e->getMessage();
+        }
+
+        Flight::redirect('/admin/categories');
     }
 
     public static function products()

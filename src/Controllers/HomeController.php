@@ -16,12 +16,19 @@ class HomeController
         $subjects = ['All', 'Physics', 'Mathematics', 'Biology', 'Chemistry'];
         $types = ['All', 'Unit Plan', 'Worksheet', 'Printable'];
 
+        $categories = [];
+        try {
+            $categories = $db->query("SELECT * FROM categories WHERE is_active = 1 ORDER BY display_order ASC, name ASC")->fetchAll();
+        } catch (\Throwable $e) {}
+
         $query = trim(Flight::request()->query['q'] ?? '');
         $selectedClass = Flight::request()->query['class'] ?? 'All';
         $selectedBoard = Flight::request()->query['board'] ?? 'All';
         $selectedSubject = Flight::request()->query['subject'] ?? 'All';
         $selectedType = Flight::request()->query['type'] ?? 'All';
         $selectedPrice = Flight::request()->query['price'] ?? 'all';
+        $selectedTag = trim(Flight::request()->query['tag'] ?? '');
+        $selectedCategory = trim(Flight::request()->query['category'] ?? '');
         $sort = Flight::request()->query['sort'] ?? 'popular';
 
         $sql = "
@@ -33,10 +40,28 @@ class HomeController
         $params = [];
 
         if (!empty($query)) {
-            $sql .= " AND (p.title LIKE ? OR p.description LIKE ? OR p.standards LIKE ?)";
+            $sql .= " AND (p.title LIKE ? OR p.description LIKE ? OR p.standards LIKE ? OR p.tags LIKE ?)";
             $params[] = "%$query%";
             $params[] = "%$query%";
             $params[] = "%$query%";
+            $params[] = "%$query%";
+        }
+
+        if (!empty($selectedTag)) {
+            $sql .= " AND (p.tags LIKE ? OR p.title LIKE ?)";
+            $params[] = "%$selectedTag%";
+            $params[] = "%$selectedTag%";
+        }
+
+        if (!empty($selectedCategory)) {
+            if (is_numeric($selectedCategory)) {
+                $sql .= " AND p.category_id = ?";
+                $params[] = (int)$selectedCategory;
+            } else {
+                $sql .= " AND (p.category_id = (SELECT id FROM categories WHERE slug = ? LIMIT 1) OR p.grade LIKE ?)";
+                $params[] = $selectedCategory;
+                $params[] = "%$selectedCategory%";
+            }
         }
 
         if ($selectedClass !== 'All' && !empty($selectedClass)) {
@@ -96,12 +121,15 @@ class HomeController
             'boards' => $boards,
             'subjects' => $subjects,
             'types' => $types,
+            'categories' => $categories,
             'products' => $products,
             'selectedClass' => $selectedClass,
             'selectedBoard' => $selectedBoard,
             'selectedSubject' => $selectedSubject,
             'selectedType' => $selectedType,
             'selectedPrice' => $selectedPrice,
+            'selectedTag' => $selectedTag,
+            'selectedCategory' => $selectedCategory,
             'searchQuery' => $query,
             'sort' => $sort
         ]);
@@ -118,6 +146,8 @@ class HomeController
         $type = Flight::request()->query['type'] ?? 'All';
         $priceFilter = Flight::request()->query['price'] ?? 'all';
         $inkFriendly = Flight::request()->query['ink_friendly'] ?? '';
+        $tag = trim(Flight::request()->query['tag'] ?? '');
+        $category = trim(Flight::request()->query['category'] ?? '');
         $sort = Flight::request()->query['sort'] ?? 'popular';
 
         $sql = "
@@ -129,10 +159,28 @@ class HomeController
         $params = [];
 
         if (!empty($query)) {
-            $sql .= " AND (p.title LIKE ? OR p.description LIKE ? OR p.standards LIKE ?)";
+            $sql .= " AND (p.title LIKE ? OR p.description LIKE ? OR p.standards LIKE ? OR p.tags LIKE ?)";
             $params[] = "%$query%";
             $params[] = "%$query%";
             $params[] = "%$query%";
+            $params[] = "%$query%";
+        }
+
+        if (!empty($tag)) {
+            $sql .= " AND (p.tags LIKE ? OR p.title LIKE ?)";
+            $params[] = "%$tag%";
+            $params[] = "%$tag%";
+        }
+
+        if (!empty($category)) {
+            if (is_numeric($category)) {
+                $sql .= " AND p.category_id = ?";
+                $params[] = (int)$category;
+            } else {
+                $sql .= " AND (p.category_id = (SELECT id FROM categories WHERE slug = ? LIMIT 1) OR p.grade LIKE ?)";
+                $params[] = $category;
+                $params[] = "%$category%";
+            }
         }
 
         if ($class !== 'All' && !empty($class)) {
