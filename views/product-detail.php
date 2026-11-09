@@ -860,17 +860,15 @@ function toggleReviewForm() {
         </a>
     </div>
 
-    <div class="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.25rem;">
+    <div class="product-grid">
         <?php foreach ($related as $rel): ?>
             <?php $relThumb = !empty($rel['thumbnail_url']) ? $rel['thumbnail_url'] : '/images/default-study-material.png'; ?>
             <div class="product-card">
-                <div class="product-thumbnail-wrap">
-                    <a href="/product/<?= htmlspecialchars($rel['slug']) ?>" class="product-thumb-link" aria-label="View <?= htmlspecialchars($rel['title']) ?>">
-                        <img src="<?= htmlspecialchars($relThumb) ?>" 
-                             alt="<?= htmlspecialchars($rel['title']) ?>" 
-                             loading="lazy"
-                             onerror="this.onerror=null; this.src='/images/default-study-material.png';">
-                    </a>
+                <a href="/product/<?= htmlspecialchars($rel['slug']) ?>" class="product-thumbnail-wrap" aria-label="View <?= htmlspecialchars($rel['title']) ?>">
+                    <img src="<?= htmlspecialchars($relThumb) ?>" 
+                         alt="<?= htmlspecialchars($rel['title']) ?>" 
+                         referrerpolicy="no-referrer"
+                         onerror="this.onerror=null; this.src='/images/default-study-material.png';">
                     <div class="badge-overlay">
                         <span class="chip" style="background: #0284c7;"><?= htmlspecialchars($rel['board'] ?? 'CBSE') ?></span>
                         <span class="chip"><?= htmlspecialchars($rel['grade']) ?></span>
@@ -878,7 +876,7 @@ function toggleReviewForm() {
                             <span class="chip chip-free">FREEBIE</span>
                         <?php endif; ?>
                     </div>
-                </div>
+                </a>
 
                 <div class="product-card-body">
                     <a href="/product/<?= htmlspecialchars($rel['slug']) ?>" class="product-title" style="font-size: 0.92rem; font-weight: 800; line-height: 1.35;">

@@ -8,13 +8,11 @@
     <?php foreach ($products as $p): ?>
         <?php $thumbImg = !empty($p['thumbnail_url']) ? $p['thumbnail_url'] : '/images/default-study-material.png'; ?>
         <div class="product-card">
-            <div class="product-thumbnail-wrap">
-                <a href="/product/<?= htmlspecialchars($p['slug']) ?>" class="product-thumb-link" aria-label="View <?= htmlspecialchars($p['title']) ?>">
-                    <img src="<?= htmlspecialchars($thumbImg) ?>" 
-                         alt="<?= htmlspecialchars($p['title']) ?>" 
-                         loading="lazy"
-                         onerror="this.onerror=null; this.src='/images/default-study-material.png';">
-                </a>
+            <a href="/product/<?= htmlspecialchars($p['slug']) ?>" class="product-thumbnail-wrap" aria-label="View <?= htmlspecialchars($p['title']) ?>">
+                <img src="<?= htmlspecialchars($thumbImg) ?>" 
+                     alt="<?= htmlspecialchars($p['title']) ?>" 
+                     referrerpolicy="no-referrer"
+                     onerror="this.onerror=null; this.src='/images/default-study-material.png';">
                 <div class="badge-overlay">
                     <span class="chip" style="background: #0284c7;"><?= htmlspecialchars($p['board'] ?? 'CBSE') ?></span>
                     <span class="chip"><?= htmlspecialchars($p['grade']) ?></span>
@@ -28,7 +26,7 @@
                         </span>
                     <?php endif; ?>
                 </div>
-            </div>
+            </a>
 
             <div class="product-card-body">
                 <a href="/product/<?= htmlspecialchars($p['slug']) ?>" class="product-title">
