@@ -26,6 +26,8 @@ return [
 
     // Contact and customer service details
     'support_email' => 'support@lockinrank.com',
-    'support_phone' => '+91 80000 00000',
+    'support_phone' => '+91 9990253219',
+    'support_whatsapp' => '+91 9990253219',
+    'store_address' => '641004, Coimbatore, Tamil Nadu, India',
 ];
 

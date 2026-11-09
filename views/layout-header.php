@@ -72,6 +72,14 @@ $seoType = !empty($ogType) ? $ogType : 'website';
     <meta name="google-site-verification" content="<?= htmlspecialchars($siteSeoConfig['google_site_verification'], ENT_QUOTES, 'UTF-8') ?>">
     <?php endif; ?>
 
+    <!-- Resource Preconnect & DNS Prefetch for Fast CDN Delivery -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="dns-prefetch" href="https://unpkg.com">
+
     <!-- Favicon & Touch Icons -->
     <link rel="icon" type="image/svg+xml" href="/images/lockinrank-icon.svg">
     <link rel="apple-touch-icon" href="/images/lockinrank-icon.svg">
@@ -80,10 +88,10 @@ $seoType = !empty($ogType) ? $ogType : 'website';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <!-- KaTeX CSS (Academic Physics & Math Formula Engine) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
-    <!-- Custom High-Contrast Theme -->
-    <link rel="stylesheet" href="/css/app.css">
+    <!-- Custom High-Contrast Theme (Minified & Optimized) -->
+    <link rel="stylesheet" href="/css/app.min.css?v=2.1">
     <!-- HTMX (Instant reactivity without node build tools) -->
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
     <!-- Simple Icon Font -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -102,10 +110,21 @@ $seoType = !empty($ogType) ? $ogType : 'website';
                     "@type": "ImageObject",
                     "url": "<?= $siteBaseUrl ?>/images/lockinrank-logo.png"
                 },
-                "contactPoint": {
-                    "@type": "ContactPoint",
-                    "email": "<?= $siteSeoConfig['support_email'] ?? 'support@lockinrank.com' ?>",
-                    "contactType": "Customer Support"
+                "contactPoint": [
+                    {
+                        "@type": "ContactPoint",
+                        "telephone": "+91 9990253219",
+                        "email": "<?= $siteSeoConfig['support_email'] ?? 'support@lockinrank.com' ?>",
+                        "contactType": "Customer Support",
+                        "availableLanguage": ["English", "Hindi", "Tamil"]
+                    }
+                ],
+                "address": {
+                    "@type": "PostalAddress",
+                    "postalCode": "641004",
+                    "addressLocality": "Coimbatore",
+                    "addressRegion": "Tamil Nadu",
+                    "addressCountry": "IN"
                 }
             },
             {

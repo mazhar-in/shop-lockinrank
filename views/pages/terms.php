@@ -59,7 +59,9 @@ include __DIR__ . '/../layout-header.php';
     <p>
         For inquiries regarding our Terms and Conditions, please contact us at:
         <br>
-        <strong>Email:</strong> <a href="mailto:support@lockinrank.com">support@lockinrank.com</a> or visit our <a href="/contact">Contact Us</a> page.
+        <strong>Email:</strong> <a href="mailto:support@lockinrank.com">support@lockinrank.com</a> | <strong>WhatsApp:</strong> <a href="https://wa.me/919990253219" target="_blank">+91 9990253219</a>
+        <br>
+        <strong>Store Address:</strong> 641004, Coimbatore, Tamil Nadu, India.
     </p>
 </div>
 

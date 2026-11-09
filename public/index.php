@@ -9,6 +9,12 @@ if (php_sapi_name() === 'cli-server') {
     $_SERVER['SCRIPT_NAME'] = '/index.php';
 }
 
+// Enable Gzip output compression for ultra-fast network transfer
+if (!headers_sent() && !ini_get('zlib.output_compression')) {
+    @ini_set('zlib.output_compression', '1');
+    @ini_set('zlib.output_compression_level', '6');
+}
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Controllers\HomeController;

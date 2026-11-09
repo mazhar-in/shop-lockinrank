@@ -64,7 +64,9 @@ include __DIR__ . '/../layout-header.php';
     <p>
         For any questions regarding cancellations or refunds:
         <br>
-        <strong>Email:</strong> <a href="mailto:support@lockinrank.com">support@lockinrank.com</a> | <strong>Phone / WhatsApp:</strong> +91 98765 43210
+        <strong>Email:</strong> <a href="mailto:support@lockinrank.com">support@lockinrank.com</a> | <strong>WhatsApp / Phone:</strong> <a href="https://wa.me/919990253219" target="_blank">+91 9990253219</a>
+        <br>
+        <strong>Store Address:</strong> 641004, Coimbatore, Tamil Nadu, India.
     </p>
 </div>
 

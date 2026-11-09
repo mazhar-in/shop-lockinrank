@@ -52,7 +52,7 @@ include __DIR__ . '/../layout-header.php';
     <ul>
         <li>Please check your <em>Spam</em>, <em>Junk</em>, or <em>Promotions</em> folders.</li>
         <li>Ensure there was no typographical error in the email address provided.</li>
-        <li>Contact our customer support at <a href="mailto:support@lockinrank.com">support@lockinrank.com</a> or visit our <a href="/contact">Contact Page</a> with your payment transaction ID or mobile number, and we will manually re-issue your files immediately.</li>
+        <li>Contact our customer support on WhatsApp at <a href="https://wa.me/919990253219" target="_blank">+91 9990253219</a> or via email at <a href="mailto:support@lockinrank.com">support@lockinrank.com</a> with your payment transaction ID or mobile number, and we will manually re-issue your files immediately.</li>
     </ul>
 </div>
 

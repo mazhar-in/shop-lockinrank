@@ -2,7 +2,7 @@
 $pageTitle = "Download Link Expired — Lockinrank Shop";
 include __DIR__ . '/../layout-header.php'; 
 
-$supportPhone = "919876543210"; // Default contact phone
+$supportPhone = "919990253219"; // Official Lockinrank WhatsApp Support Desk
 $msg = "Hello Lockinrank Support! My download link for Order #{$orderNumber} ({$title}) has expired. Could you please extend my download link? Customer: {$buyerName} ({$buyerEmail})";
 $waUrl = "https://wa.me/" . $supportPhone . "?text=" . rawurlencode($msg);
 ?>

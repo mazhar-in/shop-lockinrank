@@ -50,9 +50,11 @@ include __DIR__ . '/../layout-header.php';
     <p>
         In accordance with the Information Technology Act and rules made thereunder, any privacy-related grievances may be addressed to:
         <br>
-        <strong>Grievance Officer:</strong> Academic Support Team, Lockinrank Shop
+        <strong>Grievance Officer:</strong> Academic Support Desk, Lockinrank Shop
         <br>
-        <strong>Email:</strong> <a href="mailto:privacy@lockinrank.com">privacy@lockinrank.com</a> or through our <a href="/contact">Contact Page</a>.
+        <strong>Email:</strong> <a href="mailto:privacy@lockinrank.com">privacy@lockinrank.com</a> | <strong>WhatsApp:</strong> <a href="https://wa.me/919990253219" target="_blank">+91 9990253219</a>
+        <br>
+        <strong>Address:</strong> 641004, Coimbatore, Tamil Nadu, India.
     </p>
 </div>
 

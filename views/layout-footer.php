@@ -59,11 +59,12 @@
                         Policy & Support
                     </h5>
                     <ul style="list-style: none; padding-left: 0; font-size: 0.88rem; line-height: 2;">
-                        <li><a href="/terms" style="color: #475569; text-decoration: none;">Terms and Conditions</a></li>
-                        <li><a href="/privacy" style="color: #475569; text-decoration: none;">Privacy Policy</a></li>
+                        <li><a href="https://wa.me/919990253219" target="_blank" style="color: #16a34a; font-weight: 700; text-decoration: none;"><i class="fa-brands fa-whatsapp"></i> WhatsApp Support</a></li>
+                        <li><a href="/contact" style="color: #475569; text-decoration: none;">Help &amp; Support Desk</a></li>
                         <li><a href="/shipping" style="color: #475569; text-decoration: none;">Instant Digital Delivery</a></li>
-                        <li><a href="/cancellation-refunds" style="color: #475569; text-decoration: none;">Cancellation & Refunds</a></li>
-                        <li><a href="/contact" style="color: #475569; text-decoration: none;">Contact Support</a></li>
+                        <li><a href="/cancellation-refunds" style="color: #475569; text-decoration: none;">Cancellation &amp; Refunds</a></li>
+                        <li><a href="/privacy" style="color: #475569; text-decoration: none;">Privacy Policy</a></li>
+                        <li><a href="/terms" style="color: #475569; text-decoration: none;">Terms &amp; Conditions</a></li>
                     </ul>
                 </div>
 
@@ -87,7 +88,7 @@
             <!-- Bottom Legal Bar -->
             <div style="border-top: 1px solid #f1f5f9; padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: 0.82rem; color: #94a3b8;">
                 <div>
-                    &copy; <?= date('Y') ?> <strong>Lockinrank</strong> (shop.lockinrank.com). All rights reserved.
+                    &copy; <?= date('Y') ?> <strong>Lockinrank</strong> (shop.lockinrank.com) &bull; 641004, Coimbatore, Tamil Nadu, India.
                 </div>
                 <div style="display: flex; gap: 1rem; align-items: center;">
                     <span style="color: #475569;"><i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Instant UPI & Download</span>
