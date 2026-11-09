@@ -182,6 +182,131 @@
 
         </div>
 
+        <!-- Section 2: Automated Order Confirmation Email & SMTP Settings -->
+        <div style="margin-top: 2.5rem; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div style="width: 34px; height: 34px; border-radius: 8px; background: #059669; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
+                        <i class="fa-solid fa-envelope-circle-check"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">Automated Order Email &amp; SMTP Settings</h3>
+                        <div style="font-size: 0.78rem; color: #64748b;">Delivers purchase receipts and digital download tokens directly to students</div>
+                    </div>
+                </div>
+                <div>
+                    <?php if (!empty($mailConfig['password'])): ?>
+                        <span style="background: #dcfce7; color: #15803d; font-size: 0.78rem; font-weight: 800; padding: 0.25rem 0.65rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 0.35rem;">
+                            <i class="fa-solid fa-circle-check"></i> SMTP Password Set
+                        </span>
+                    <?php else: ?>
+                        <span style="background: #fee2e2; color: #b91c1c; font-size: 0.78rem; font-weight: 800; padding: 0.25rem 0.65rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 0.35rem;">
+                            <i class="fa-solid fa-triangle-exclamation"></i> SMTP Password Missing
+                        </span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="grid" style="grid-template-columns: 1.6fr 1fr; gap: 2rem; align-items: flex-start;">
+                
+                <!-- SMTP Form -->
+                <form method="POST" action="/admin/settings/mail" style="margin-bottom: 0;">
+                    
+                    <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label for="mail_host" style="font-weight: 800; font-size: 0.85rem; color: #1e293b; margin-bottom: 0.3rem;">
+                                SMTP Host <span style="color: #ef4444;">*</span>
+                            </label>
+                            <input type="text" id="mail_host" name="mail_host" value="<?= htmlspecialchars($mailConfig['host'] ?? 'smtp.hostinger.com') ?>" required style="font-size: 0.88rem; margin-bottom: 0;">
+                        </div>
+                        <div>
+                            <label for="mail_port" style="font-weight: 800; font-size: 0.85rem; color: #1e293b; margin-bottom: 0.3rem;">
+                                Port <span style="color: #ef4444;">*</span>
+                            </label>
+                            <input type="number" id="mail_port" name="mail_port" value="<?= (int)($mailConfig['port'] ?? 465) ?>" required style="font-size: 0.88rem; margin-bottom: 0;">
+                        </div>
+                    </div>
+
+                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label for="mail_encryption" style="font-weight: 800; font-size: 0.85rem; color: #1e293b; margin-bottom: 0.3rem;">
+                                Encryption <span style="color: #ef4444;">*</span>
+                            </label>
+                            <select id="mail_encryption" name="mail_encryption" style="font-size: 0.88rem; margin-bottom: 0;">
+                                <option value="ssl" <?= (($mailConfig['encryption'] ?? 'ssl') === 'ssl') ? 'selected' : '' ?>>SSL (Port 465 - Recommended)</option>
+                                <option value="tls" <?= (($mailConfig['encryption'] ?? 'ssl') === 'tls') ? 'selected' : '' ?>>TLS (Port 587)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="mail_username" style="font-weight: 800; font-size: 0.85rem; color: #1e293b; margin-bottom: 0.3rem;">
+                                Email / Username <span style="color: #ef4444;">*</span>
+                            </label>
+                            <input type="email" id="mail_username" name="mail_username" value="<?= htmlspecialchars($mailConfig['username'] ?? 'orders@lockinrank.com') ?>" required style="font-size: 0.88rem; margin-bottom: 0;">
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div style="margin-bottom: 1.25rem;">
+                        <label for="mail_password" style="font-weight: 800; font-size: 0.85rem; color: #1e293b; margin-bottom: 0.3rem;">
+                            Email Password <span style="color: #ef4444;">*</span>
+                            <?php if (!empty($mailConfig['password'])): ?>
+                                <span style="color: #059669; font-weight: normal; font-size: 0.75rem;">(Configured — enter only if updating)</span>
+                            <?php endif; ?>
+                        </label>
+                        <div style="position: relative;">
+                            <input type="password" id="mail_password" name="mail_password" placeholder="<?= !empty($mailConfig['password']) ? '•••••••••••• (Leave blank to keep existing)' : 'Enter email password created in Hostinger' ?>" style="font-size: 0.88rem; padding-right: 2.5rem; margin-bottom: 0;">
+                            <button type="button" onclick="togglePasswordVisibility('mail_password', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; font-size: 0.9rem;">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <label for="mail_from_name" style="font-weight: 800; font-size: 0.85rem; color: #1e293b; margin-bottom: 0.3rem;">
+                                Sender Name
+                            </label>
+                            <input type="text" id="mail_from_name" name="mail_from_name" value="<?= htmlspecialchars($mailConfig['from_name'] ?? 'Lockinrank Academic Store') ?>" style="font-size: 0.88rem; margin-bottom: 0;">
+                        </div>
+                        <div>
+                            <label for="mail_from_address" style="font-weight: 800; font-size: 0.85rem; color: #1e293b; margin-bottom: 0.3rem;">
+                                Sender Address
+                            </label>
+                            <input type="email" id="mail_from_address" name="mail_from_address" value="<?= htmlspecialchars($mailConfig['from_address'] ?? 'orders@lockinrank.com') ?>" style="font-size: 0.88rem; margin-bottom: 0;">
+                        </div>
+                    </div>
+
+                    <button type="submit" style="background-color: #059669; border-color: #059669; color: #ffffff; font-weight: 700; font-size: 0.9rem; padding: 0.6rem 1.4rem; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 0;">
+                        <i class="fa-solid fa-floppy-disk"></i> Save SMTP Settings
+                    </button>
+                </form>
+
+                <!-- Send Test Email Tool -->
+                <div>
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 1.25rem;">
+                        <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
+                            <i class="fa-solid fa-paper-plane" style="color: #4f46e5;"></i> Send Test Email
+                        </h4>
+                        <p style="font-size: 0.8rem; color: #64748b; line-height: 1.5; margin-bottom: 1rem;">
+                            Verify your SMTP server by sending a live test order receipt to any email address.
+                        </p>
+
+                        <form method="POST" action="/admin/settings/test-mail" style="margin-bottom: 0;">
+                            <label for="test_email" style="font-weight: 800; font-size: 0.82rem; color: #334155; margin-bottom: 0.3rem;">
+                                Test Recipient Email:
+                            </label>
+                            <input type="email" id="test_email" name="test_email" placeholder="your-email@gmail.com" required style="font-size: 0.88rem; margin-bottom: 0.75rem;">
+                            <button type="submit" style="background-color: #4f46e5; border-color: #4f46e5; color: #ffffff; font-weight: 700; font-size: 0.85rem; padding: 0.55rem 1.1rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; width: 100%; justify-content: center; margin-bottom: 0;">
+                                <i class="fa-solid fa-paper-plane"></i> Send Test Receipt
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </main>
 
     <script>

@@ -70,6 +70,9 @@ Flight::route('GET /admin/products/export-sample-json', [AdminController::class,
 Flight::route('GET /admin/settings', [AdminController::class, 'settings']);
 Flight::route('GET /admin/change-password', [AdminController::class, 'settings']);
 Flight::route('POST /admin/settings/password', [AdminController::class, 'updatePassword']);
+Flight::route('POST /admin/settings/mail', [AdminController::class, 'updateMailSettings']);
+Flight::route('POST /admin/settings/test-mail', [AdminController::class, 'testMail']);
+Flight::route('POST /admin/order/@id:[0-9]+/resend-receipt', [AdminController::class, 'resendReceipt']);
 
 // --- Legacy Seller Routes Protection (Redirect to Admin Login) ---
 Flight::route('GET /seller', function() { Flight::redirect('/admin/login'); });

@@ -284,8 +284,8 @@ class CartController
         ");
         $stmt->execute([$razorpayPaymentId, $razorpaySignature, $internalOrderNumber]);
 
-        // Increment sales count for each product in this order
-        $orderStmt = $db->prepare("SELECT id FROM orders WHERE order_number = ?");
+        // Increment sales count for each product in this order & fetch full order details for receipt
+        $orderStmt = $db->prepare("SELECT * FROM orders WHERE order_number = ?");
         $orderStmt->execute([$internalOrderNumber]);
         $order = $orderStmt->fetch();
 

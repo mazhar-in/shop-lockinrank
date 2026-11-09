@@ -5,6 +5,34 @@ namespace App\Services;
 class MailService
 {
     /**
+     * Retrieve merged mail configuration from config/mail.php and database site_settings.
+     */
+    public static function getConfig(): array
+    {
+        $configPath = __DIR__ . '/../../config/mail.php';
+        $config = file_exists($configPath) ? require $configPath : [];
+
+        // Check if database overrides exist in site_settings
+        try {
+            $db = \App\Database::getConnection();
+            $stmt = $db->query("SELECT setting_key, setting_value FROM site_settings WHERE setting_key LIKE 'mail_%'");
+            $rows = $stmt->fetchAll(\PDO::FETCH_KEY_PAIR);
+            if (!empty($rows)) {
+                if (!empty($rows['mail_host'])) $config['host'] = $rows['mail_host'];
+                if (!empty($rows['mail_port'])) $config['port'] = (int)$rows['mail_port'];
+                if (!empty($rows['mail_encryption'])) $config['encryption'] = $rows['mail_encryption'];
+                if (!empty($rows['mail_username'])) $config['username'] = $rows['mail_username'];
+                if (!empty($rows['mail_password'])) $config['password'] = $rows['mail_password'];
+                if (!empty($rows['mail_from_name'])) $config['from_name'] = $rows['mail_from_name'];
+                if (!empty($rows['mail_from_address'])) $config['from_address'] = $rows['mail_from_address'];
+                if (!empty($rows['mail_driver'])) $config['driver'] = $rows['mail_driver'];
+            }
+        } catch (\Throwable $e) {}
+
+        return $config;
+    }
+
+    /**
      * Send automated order confirmation and PDF download links email.
      *
      * @param array $order Order record (order_number, buyer_name, buyer_email, total_amount, etc.)
@@ -13,8 +41,7 @@ class MailService
      */
     public static function sendOrderReceipt(array $order, array $items): bool
     {
-        $configPath = __DIR__ . '/../../config/mail.php';
-        $config = file_exists($configPath) ? require $configPath : [];
+        $config = self::getConfig();
 
         $recipientEmail = trim($order['buyer_email'] ?? '');
         $recipientName = trim($order['buyer_name'] ?? 'Aspirant');
@@ -28,7 +55,6 @@ class MailService
         $subject = "Your Study Materials Are Ready! — Order #{$orderNumber} (Lockinrank Shop)";
 
         $domain = getenv('STORE_DOMAIN') ?: (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'shop.lockinrank.com');
-        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
         if (str_contains($domain, 'localhost')) {
             $baseUrl = "http://{$domain}";
         } else {
@@ -131,17 +157,22 @@ class MailService
         $headers = [];
         $headers[] = "MIME-Version: 1.0";
         $headers[] = "Content-type: text/html; charset=UTF-8";
-        $headers[] = "From: {$fromName} <{$fromEmail}>";
+        $headers[] = "From: =?UTF-8?B?" . base64_encode($fromName) . "?= <{$fromEmail}>";
         $headers[] = "Reply-To: {$fromEmail}";
         $headers[] = "X-Mailer: PHP/" . phpversion();
 
-        return @mail($toEmail, $subject, $htmlBody, implode("\r\n", $headers));
+        return @mail($toEmail, $subject, $htmlBody, implode("\r\n", $headers), "-f{$fromEmail}");
     }
 
     private static function sendCommand($socket, string $cmd): string
     {
         fwrite($socket, $cmd . "\r\n");
-        return self::readResponse($socket);
+        $response = self::readResponse($socket);
+        $code = (int)substr(trim($response), 0, 3);
+        if ($code >= 400) {
+            throw new \Exception("SMTP server returned error: " . trim($response));
+        }
+        return $response;
     }
 
     private static function readResponse($socket): string
@@ -154,6 +185,49 @@ class MailService
             }
         }
         return $response;
+    }
+
+    /**
+     * Diagnostic tool: attempt sending a test email to a target recipient
+     * and return detailed status message.
+     */
+    public static function sendTestEmail(string $targetEmail): array
+    {
+        $config = self::getConfig();
+        $targetEmail = trim($targetEmail);
+
+        if (empty($targetEmail) || !filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+            return ['success' => false, 'message' => 'Please provide a valid recipient email address.'];
+        }
+
+        $subject = "Lockinrank Store — SMTP Test Email (" . date('d M Y, h:i A') . ")";
+        $html = "<div style='font-family: sans-serif; padding: 20px; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px;'>
+            <h2 style='color: #4f46e5; margin-top: 0;'>Lockinrank Store Email Test Successful!</h2>
+            <p>This is a verified test email sent from <strong>shop.lockinrank.com</strong>.</p>
+            <div style='background: #f8fafc; padding: 12px; border-radius: 6px; font-size: 14px;'>
+                <div><strong>Host:</strong> {$config['host']}:{$config['port']}</div>
+                <div><strong>Encryption:</strong> {$config['encryption']}</div>
+                <div><strong>From:</strong> {$config['from_name']} &lt;{$config['from_address']}&gt;</div>
+                <div><strong>Timestamp:</strong> " . date('Y-m-d H:i:s') . "</div>
+            </div>
+            <p style='color: #10b981; font-weight: bold; margin-top: 15px;'>✓ Your SMTP server is operating correctly and ready to deliver order receipts.</p>
+        </div>";
+
+        try {
+            if (empty($config['password'])) {
+                // Try PHP mail
+                $sent = self::sendViaPhpMail($config, $targetEmail, 'Admin Tester', $subject, $html);
+                if ($sent) {
+                    return ['success' => true, 'message' => "Test email dispatched via PHP mail() fallback to {$targetEmail}."];
+                }
+                return ['success' => false, 'message' => "SMTP password is not configured and PHP mail() returned false. Please configure your SMTP password in Settings."];
+            }
+
+            self::sendViaSmtp($config, $targetEmail, 'Admin Tester', $subject, $html);
+            return ['success' => true, 'message' => "Test email sent successfully via SMTP ({$config['host']}) to {$targetEmail}!"];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'message' => "SMTP delivery failed: " . $e->getMessage()];
+        }
     }
 
     /**

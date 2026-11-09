@@ -137,6 +137,13 @@
                                         <?php endif; ?>
                                     </td>
                                     <td style="padding: 0.85rem 0.5rem; text-align: right; white-space: nowrap;">
+                                        <?php if ($ord['payment_status'] === 'paid'): ?>
+                                            <form method="POST" action="/admin/order/<?= $ord['id'] ?>/resend-receipt" style="display: inline; margin: 0 0.35rem 0 0;" onsubmit="return confirm('Resend order confirmation email with download links to <?= htmlspecialchars($ord['buyer_email']) ?>?')">
+                                                <button type="submit" style="font-size: 0.8rem; padding: 0.35rem 0.65rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; color: #047857; cursor: pointer; margin-bottom: 0; font-weight: 700;" title="Resend download links receipt email">
+                                                    <i class="fa-solid fa-paper-plane"></i> Resend Email
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
                                         <a href="/admin/customer?email=<?= urlencode($ord['buyer_email']) ?>" style="font-size: 0.8rem; padding: 0.35rem 0.65rem; background: #eff6ff; border-radius: 6px; color: #2563eb; text-decoration: none; margin-right: 0.35rem; font-weight: 700;">
                                             <i class="fa-solid fa-user"></i> View Profile
                                         </a>

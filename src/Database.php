@@ -230,6 +230,27 @@ class Database
                 ");
             } catch (\Throwable $e2) {}
         }
+
+        // Ensure site_settings table exists for persistent configuration (e.g. SMTP email keys)
+        try {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS site_settings (
+                    setting_key TEXT PRIMARY KEY,
+                    setting_value TEXT,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
+        } catch (\Throwable $e) {
+            try {
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS `site_settings` (
+                        `setting_key` VARCHAR(100) PRIMARY KEY,
+                        `setting_value` TEXT,
+                        `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ");
+            } catch (\Throwable $e2) {}
+        }
     }
 
     private static function migrateAndSeed(PDO $db): void

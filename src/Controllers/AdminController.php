@@ -155,13 +155,135 @@ class AdminController
         self::checkAuth();
         $config = self::getConfig();
         $isDefault = self::isDefaultPassword();
+        $mailConfig = \App\Services\MailService::getConfig();
 
         Flight::render('admin/settings', [
             'username' => $_SESSION['admin_user'] ?? $config['username'] ?? 'admin',
             'adminName' => $_SESSION['admin_name'] ?? $config['admin_name'] ?? 'Lockinrank Admin',
             'isDefaultPassword' => $isDefault,
-            'pageTitle' => 'Admin Security & Password Settings — Lockinrank Control Panel'
+            'mailConfig' => $mailConfig,
+            'pageTitle' => 'Admin Security & Settings — Lockinrank Control Panel'
         ]);
+    }
+
+    /**
+     * Update SMTP mail server settings
+     */
+    public static function updateMailSettings()
+    {
+        self::checkAuth();
+        $db = Database::getConnection();
+
+        $host = trim(Flight::request()->data['mail_host'] ?? 'smtp.hostinger.com');
+        $port = (int)(Flight::request()->data['mail_port'] ?? 465);
+        $encryption = trim(Flight::request()->data['mail_encryption'] ?? 'ssl');
+        $username = trim(Flight::request()->data['mail_username'] ?? 'orders@lockinrank.com');
+        $password = (string)(Flight::request()->data['mail_password'] ?? '');
+        $fromName = trim(Flight::request()->data['mail_from_name'] ?? 'Lockinrank Academic Store');
+        $fromAddress = trim(Flight::request()->data['mail_from_address'] ?? 'orders@lockinrank.com');
+
+        $settings = [
+            'mail_host' => $host,
+            'mail_port' => $port,
+            'mail_encryption' => $encryption,
+            'mail_username' => $username,
+            'mail_from_name' => $fromName,
+            'mail_from_address' => $fromAddress,
+            'mail_driver' => 'smtp'
+        ];
+
+        if (!empty($password)) {
+            $settings['mail_password'] = $password;
+        }
+
+        foreach ($settings as $k => $v) {
+            try {
+                $stmt = $db->prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP");
+                $stmt->execute([$k, (string)$v]);
+            } catch (\Throwable $e) {
+                try {
+                    $db->prepare("INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)")->execute([$k, (string)$v]);
+                } catch (\Throwable $e2) {}
+            }
+        }
+
+        // Also update config/mail.php if writable
+        try {
+            $configFile = __DIR__ . '/../../config/mail.php';
+            if (is_writable($configFile)) {
+                $savedMailConfig = \App\Services\MailService::getConfig();
+                $content = "<?php\n\n/**\n * Hostinger SMTP Mail Configuration\n */\n\nreturn [\n" .
+                    "    'driver' => 'smtp',\n" .
+                    "    'host' => " . var_export($savedMailConfig['host'], true) . ",\n" .
+                    "    'port' => " . (int)$savedMailConfig['port'] . ",\n" .
+                    "    'encryption' => " . var_export($savedMailConfig['encryption'], true) . ",\n" .
+                    "    'username' => " . var_export($savedMailConfig['username'], true) . ",\n" .
+                    "    'password' => " . var_export($savedMailConfig['password'] ?? '', true) . ",\n" .
+                    "    'from_name' => " . var_export($savedMailConfig['from_name'], true) . ",\n" .
+                    "    'from_address' => " . var_export($savedMailConfig['from_address'], true) . ",\n" .
+                    "    'reply_to' => " . var_export($savedMailConfig['from_address'], true) . ",\n" .
+                    "];\n";
+                @file_put_contents($configFile, $content);
+            }
+        } catch (\Throwable $e) {}
+
+        $_SESSION['admin_flash_success'] = 'SMTP email settings updated successfully.';
+        Flight::redirect('/admin/settings');
+    }
+
+    /**
+     * Send test email to verify SMTP delivery
+     */
+    public static function testMail()
+    {
+        self::checkAuth();
+        $targetEmail = trim(Flight::request()->data['test_email'] ?? '');
+        $res = \App\Services\MailService::sendTestEmail($targetEmail);
+
+        if ($res['success']) {
+            $_SESSION['admin_flash_success'] = $res['message'];
+        } else {
+            $_SESSION['admin_flash_error'] = $res['message'];
+        }
+
+        Flight::redirect('/admin/settings');
+    }
+
+    /**
+     * Resend order confirmation and download links receipt
+     */
+    public static function resendReceipt($orderId)
+    {
+        self::checkAuth();
+        $db = Database::getConnection();
+
+        $orderStmt = $db->prepare("SELECT * FROM orders WHERE id = ?");
+        $orderStmt->execute([(int)$orderId]);
+        $order = $orderStmt->fetch();
+
+        if (!$order) {
+            $_SESSION['admin_flash_error'] = "Order not found.";
+            Flight::redirect('/admin/orders');
+            return;
+        }
+
+        $itemsStmt = $db->prepare("
+            SELECT oi.*, p.title, p.file_format 
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = ?
+        ");
+        $itemsStmt->execute([(int)$orderId]);
+        $orderItems = $itemsStmt->fetchAll();
+
+        $sent = \App\Services\MailService::sendOrderReceipt($order, $orderItems);
+        if ($sent) {
+            $_SESSION['admin_flash_success'] = "Confirmation email resent successfully to " . htmlspecialchars($order['buyer_email']) . " for order #" . htmlspecialchars($order['order_number']) . ".";
+        } else {
+            $_SESSION['admin_flash_error'] = "Could not send receipt email. Please verify SMTP settings in Settings.";
+        }
+
+        Flight::redirect('/admin/orders');
     }
 
     /**
