@@ -22,3 +22,4 @@ return [
     'support_email' => 'support@lockinrank.com',
     'support_phone' => '+91 80000 00000',
 ];
+

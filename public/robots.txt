@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /seller
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+Allow: /uploads/
+Allow: /images/
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: Google-Store-Bot
+Allow: /
+
+Sitemap: https://shop.lockinrank.com/feed/google-merchant.xml

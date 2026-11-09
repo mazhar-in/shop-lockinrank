@@ -65,24 +65,37 @@ class FeedController
         $xml->writeElement('description', 'High-yield problem drills, formula sheets, ray diagrams, and test series for JEE Main, JEE Advanced, NEET, CBSE Boards, and AP Physics.');
         $xml->writeElement('lastBuildDate', date(DATE_RSS));
 
+        $defaultFallbackImage = $baseUrl . '/images/default-study-material.png';
+
         foreach ($products as $p) {
             $productUrl = $baseUrl . '/product/' . $p['slug'];
 
-            // Format primary image URL
-            $imageUrl = $p['thumbnail_url'] ?? '';
-            if (!empty($imageUrl) && !str_starts_with($imageUrl, 'http://') && !str_starts_with($imageUrl, 'https://')) {
-                $imageUrl = $baseUrl . '/' . ltrim($imageUrl, '/');
+            // Extract preview images
+            $rawPreviews = json_decode($p['preview_images'] ?? '[]', true) ?: [];
+
+            // Resolve primary image with verification and fallback
+            $imageUrl = self::resolveValidImageUrl($p['thumbnail_url'] ?? '', $baseUrl);
+            if (empty($imageUrl)) {
+                // Try to find first valid preview image
+                foreach ($rawPreviews as $candidate) {
+                    $resolved = self::resolveValidImageUrl($candidate, $baseUrl);
+                    if (!empty($resolved)) {
+                        $imageUrl = $resolved;
+                        break;
+                    }
+                }
+            }
+            if (empty($imageUrl)) {
+                $imageUrl = $defaultFallbackImage;
             }
 
-            // Extract additional preview images
+            // Extract additional preview images (only verified valid images)
             $additionalImages = [];
-            $previewList = json_decode($p['preview_images'] ?? '[]', true) ?: [];
-            foreach ($previewList as $pi) {
-                if (!empty($pi) && $pi !== $p['thumbnail_url']) {
-                    if (!str_starts_with($pi, 'http://') && !str_starts_with($pi, 'https://')) {
-                        $additionalImages[] = $baseUrl . '/' . ltrim($pi, '/');
-                    } else {
-                        $additionalImages[] = $pi;
+            foreach ($rawPreviews as $pi) {
+                if (!empty($pi)) {
+                    $resolvedPi = self::resolveValidImageUrl($pi, $baseUrl);
+                    if (!empty($resolvedPi) && $resolvedPi !== $imageUrl && !in_array($resolvedPi, $additionalImages)) {
+                        $additionalImages[] = $resolvedPi;
                     }
                 }
             }
@@ -162,5 +175,41 @@ class FeedController
         $cleanHash = preg_replace('/\.html$/i', '', $hash);
         header('Content-Type: text/html; charset=UTF-8');
         echo "google-site-verification: google{$cleanHash}.html";
+    }
+
+    /**
+     * Validate product image URL.
+     * Verifies that local uploads actually exist on disk with valid file size.
+     * Returns the verified absolute URL or null if invalid.
+     */
+    private static function resolveValidImageUrl(?string $rawUrl, string $baseUrl): ?string
+    {
+        if (empty($rawUrl)) {
+            return null;
+        }
+
+        // Relative path e.g. /uploads/products/xyz.png
+        if (!str_starts_with($rawUrl, 'http://') && !str_starts_with($rawUrl, 'https://')) {
+            $localRel = ltrim($rawUrl, '/');
+            $localFile = __DIR__ . '/../../public/' . $localRel;
+            if (file_exists($localFile) && filesize($localFile) > 0) {
+                return $baseUrl . '/' . $localRel;
+            }
+            return null;
+        }
+
+        // Absolute URL pointing to current domain
+        if (str_starts_with($rawUrl, $baseUrl)) {
+            $parsedPath = parse_url($rawUrl, PHP_URL_PATH) ?? '';
+            $localRel = ltrim($parsedPath, '/');
+            $localFile = __DIR__ . '/../../public/' . $localRel;
+            if (file_exists($localFile) && filesize($localFile) > 0) {
+                return $rawUrl;
+            }
+            return null;
+        }
+
+        // External CDN / Unsplash URL
+        return $rawUrl;
     }
 }

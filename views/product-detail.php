@@ -9,17 +9,39 @@ $baseUrl = rtrim($seoConfig['base_url'] ?? 'https://shop.lockinrank.com', '/');
 $canonicalUrl = $baseUrl . '/product/' . ($product['slug'] ?? $product['id']);
 
 $schemaImages = [];
+$defaultFallbackImage = $baseUrl . '/images/default-study-material.png';
+
+$checkImageExists = function($imgUrl) use ($baseUrl) {
+    if (empty($imgUrl)) return false;
+    if (str_starts_with($imgUrl, $baseUrl)) {
+        $path = parse_url($imgUrl, PHP_URL_PATH);
+        $local = __DIR__ . '/../public/' . ltrim($path, '/');
+        return file_exists($local) && filesize($local) > 0;
+    }
+    if (!str_starts_with($imgUrl, 'http://') && !str_starts_with($imgUrl, 'https://')) {
+        $local = __DIR__ . '/../public/' . ltrim($imgUrl, '/');
+        return file_exists($local) && filesize($local) > 0;
+    }
+    return true; // External CDN/Unsplash URL
+};
+
 if (!empty($product['thumbnail_url'])) {
     $thumb = $product['thumbnail_url'];
-    $schemaImages[] = str_starts_with($thumb, 'http') ? $thumb : ($baseUrl . '/' . ltrim($thumb, '/'));
+    $fullThumb = str_starts_with($thumb, 'http') ? $thumb : ($baseUrl . '/' . ltrim($thumb, '/'));
+    if ($checkImageExists($fullThumb)) {
+        $schemaImages[] = $fullThumb;
+    }
 }
 if (!empty($previewImages)) {
     foreach ($previewImages as $prevImg) {
         $fullImg = str_starts_with($prevImg, 'http') ? $prevImg : ($baseUrl . '/' . ltrim($prevImg, '/'));
-        if (!in_array($fullImg, $schemaImages)) {
+        if (!in_array($fullImg, $schemaImages) && $checkImageExists($fullImg)) {
             $schemaImages[] = $fullImg;
         }
     }
+}
+if (empty($schemaImages)) {
+    $schemaImages[] = $defaultFallbackImage;
 }
 
 $schemaData = [
