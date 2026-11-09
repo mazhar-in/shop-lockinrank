@@ -11,3 +11,7 @@ Thumbs.db
 
 # Scratch dev files
 scratch/
+
+# Credentials & Key files
+config/*.csv
+*.csv

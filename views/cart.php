@@ -97,7 +97,10 @@ include __DIR__ . '/layout-header.php';
                     <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; margin-bottom: 1.25rem; font-size: 0.82rem;">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
                             <span style="font-weight: 700; color: #0f172a;">Payment Gateway:</span>
-                            <span class="chip" style="background-color: #0284c7; font-size: 0.68rem;">RAZORPAY TEST MODE</span>
+                            <?php $isLive = str_starts_with($razorpayKey ?? '', 'rzp_live'); ?>
+                            <span class="chip" style="background-color: <?= $isLive ? '#10b981' : '#0284c7' ?>; font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 4px; color: #ffffff;">
+                                <i class="fa-solid fa-shield-halved"></i> <?= $isLive ? '100% SECURE CHECKOUT' : 'RAZORPAY TEST MODE' ?>
+                            </span>
                         </div>
                         <div style="color: #64748b; line-height: 1.4;">
                             Supports <strong>UPI</strong> (GPay, PhonePe, Paytm, QR), <strong>RuPay / Visa / Mastercard</strong>, and Netbanking.
