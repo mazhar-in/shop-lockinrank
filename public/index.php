@@ -78,6 +78,9 @@ Flight::route('GET /cancellation-refunds', [PageController::class, 'refunds']);
 Flight::route('GET /contact', [PageController::class, 'contact']);
 Flight::route('POST /contact', [PageController::class, 'submitContact']);
 
+// --- SEO & Google Search Sitemaps ---
+Flight::route('GET /sitemap.xml', [FeedController::class, 'sitemapXml']);
+
 // --- Google Merchant Center & Shopping Feeds ---
 Flight::route('GET /feed/google-merchant.xml', [FeedController::class, 'googleMerchantXml']);
 Flight::route('GET /google-shopping-feed.xml', [FeedController::class, 'googleMerchantXml']);

@@ -1,5 +1,9 @@
 <?php 
-$pageTitle = htmlspecialchars($store['name']) . " — Lockinrank Official Store";
+$cleanStoreName = strip_tags($store['name']);
+$pageTitle = $cleanStoreName . " — Lockinrank Official Store";
+$pageDescription = !empty($store['bio']) ? strip_tags($store['bio']) : "Official teaching and exam prep materials by " . ($store['author_name'] ?? $cleanStoreName) . " on Lockinrank.";
+$canonicalUrl = "https://shop.lockinrank.com/store/" . ($store['slug'] ?? 'official');
+$ogImage = $store['avatar'] ?? null;
 include __DIR__ . '/layout-header.php'; 
 ?>
 

@@ -1,5 +1,7 @@
 <?php 
 $pageTitle = "Cancellation and Refund Policy — Lockinrank Shop";
+$pageDescription = "Cancellation and Refund Policy for Lockinrank Shop digital downloads. Learn about our student satisfaction guarantee and refund eligibility.";
+$canonicalUrl = "https://shop.lockinrank.com/cancellation-refunds";
 include __DIR__ . '/../layout-header.php'; 
 ?>
 

@@ -1,5 +1,7 @@
 <?php 
 $pageTitle = "Privacy Policy — Lockinrank Shop";
+$pageDescription = "Privacy Policy for Lockinrank Shop. Learn how we securely protect student and educator data in compliance with Indian IT Act standards.";
+$canonicalUrl = "https://shop.lockinrank.com/privacy";
 include __DIR__ . '/../layout-header.php'; 
 ?>
 

@@ -1,5 +1,6 @@
 <?php 
 $pageTitle = "Your Cart — Lockinrank Shop";
+$noIndex = true;
 include __DIR__ . '/layout-header.php'; 
 ?>
 

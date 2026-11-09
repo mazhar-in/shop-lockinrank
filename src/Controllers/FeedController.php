@@ -178,6 +178,86 @@ class FeedController
     }
 
     /**
+     * Generate standard Google Search XML Sitemap (/sitemap.xml)
+     */
+    public static function sitemapXml()
+    {
+        $db = Database::getConnection();
+
+        $seoConfig = file_exists(__DIR__ . '/../../config/seo.php') ? require __DIR__ . '/../../config/seo.php' : [];
+        $baseUrl = rtrim($seoConfig['base_url'] ?? 'https://shop.lockinrank.com', '/');
+
+        // Fetch products
+        $prodStmt = $db->query("SELECT slug, id, created_at FROM products ORDER BY id DESC");
+        $products = $prodStmt->fetchAll();
+
+        // Fetch stores
+        $storeStmt = $db->query("SELECT slug FROM stores");
+        $stores = $storeStmt->fetchAll();
+
+        header('Content-Type: application/xml; charset=UTF-8');
+        header('X-Robots-Tag: noindex, follow');
+
+        $xml = new \XMLWriter();
+        $xml->openMemory();
+        $xml->setIndent(true);
+        $xml->setIndentString('  ');
+        $xml->startDocument('1.0', 'UTF-8');
+
+        $xml->startElement('urlset');
+        $xml->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
+
+        // 1. Homepage
+        $xml->startElement('url');
+        $xml->writeElement('loc', $baseUrl . '/');
+        $xml->writeElement('changefreq', 'daily');
+        $xml->writeElement('priority', '1.0');
+        $xml->endElement();
+
+        // 2. Active Products
+        foreach ($products as $p) {
+            $lastmod = !empty($p['created_at']) ? date('Y-m-d', strtotime($p['created_at'])) : date('Y-m-d');
+            $xml->startElement('url');
+            $xml->writeElement('loc', $baseUrl . '/product/' . $p['slug']);
+            $xml->writeElement('lastmod', $lastmod);
+            $xml->writeElement('changefreq', 'weekly');
+            $xml->writeElement('priority', '0.9');
+            $xml->endElement();
+        }
+
+        // 3. Store Fronts
+        foreach ($stores as $s) {
+            $xml->startElement('url');
+            $xml->writeElement('loc', $baseUrl . '/store/' . ($s['slug'] ?? 'official'));
+            $xml->writeElement('changefreq', 'weekly');
+            $xml->writeElement('priority', '0.8');
+            $xml->endElement();
+        }
+
+        // 4. Policy and Compliance Pages
+        $staticPages = [
+            '/contact'              => ['priority' => '0.6', 'changefreq' => 'monthly'],
+            '/terms'                => ['priority' => '0.5', 'changefreq' => 'monthly'],
+            '/privacy'              => ['priority' => '0.5', 'changefreq' => 'monthly'],
+            '/shipping'             => ['priority' => '0.5', 'changefreq' => 'monthly'],
+            '/cancellation-refunds' => ['priority' => '0.5', 'changefreq' => 'monthly']
+        ];
+
+        foreach ($staticPages as $path => $meta) {
+            $xml->startElement('url');
+            $xml->writeElement('loc', $baseUrl . $path);
+            $xml->writeElement('changefreq', $meta['changefreq']);
+            $xml->writeElement('priority', $meta['priority']);
+            $xml->endElement();
+        }
+
+        $xml->endElement(); // urlset
+        $xml->endDocument();
+
+        echo $xml->outputMemory();
+    }
+
+    /**
      * Validate product image URL.
      * Verifies that local uploads actually exist on disk with valid file size.
      * Returns the verified absolute URL or null if invalid.

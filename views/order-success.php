@@ -1,5 +1,6 @@
 <?php 
 $pageTitle = "Order Confirmed — Lockinrank Resources Ready!";
+$noIndex = true;
 include __DIR__ . '/layout-header.php'; 
 ?>
 

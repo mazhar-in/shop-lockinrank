@@ -1,5 +1,7 @@
 <?php 
-$pageTitle = "Shipping & Delivery Policy — Lockinrank Shop";
+$pageTitle = "Shipping & Digital Delivery Policy — Lockinrank Shop";
+$pageDescription = "Lockinrank Instant Digital Delivery Policy. Learn how purchased DPPs, formula books, and test materials are delivered via instant email and download links.";
+$canonicalUrl = "https://shop.lockinrank.com/shipping";
 include __DIR__ . '/../layout-header.php'; 
 ?>
 

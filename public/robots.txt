@@ -2,6 +2,9 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /seller
+Disallow: /cart
+Disallow: /order/
+Disallow: /download/
 
 User-agent: Googlebot
 Allow: /
@@ -17,4 +20,6 @@ Allow: /
 User-agent: Google-Store-Bot
 Allow: /
 
+Sitemap: https://shop.lockinrank.com/sitemap.xml
 Sitemap: https://shop.lockinrank.com/feed/google-merchant.xml
+

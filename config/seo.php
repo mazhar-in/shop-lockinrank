@@ -10,6 +10,12 @@ return [
 
     // Brand and Publisher Name
     'brand_name' => 'Lockinrank',
+    'site_name' => 'Lockinrank Shop',
+
+    // Default SEO Meta Defaults
+    'default_title' => 'Lockinrank Shop — Top-Rank JEE, NEET, CBSE & AP Physics Prep Materials',
+    'default_description' => 'Official Lockinrank digital store. Download high-yield physics DPPs, formula master sheets, ray diagrams, and test series for JEE Main, JEE Advanced, NEET, CBSE Boards & AP Physics.',
+    'default_image' => 'https://shop.lockinrank.com/images/lockinrank-logo.png',
 
     // Currency code for product pricing in Google Shopping
     'currency' => 'INR',

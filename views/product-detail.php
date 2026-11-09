@@ -1,12 +1,16 @@
 <?php 
-$pageTitle = htmlspecialchars($product['title']) . " — Lockinrank Shop";
-$hideMobileBottomNav = true; // Replace bottom nav with Sticky Purchase Bar on product page
-include __DIR__ . '/layout-header.php'; 
-
-// Schema.org JSON-LD for Google Shopping & Merchant Center item crawler
+// Prepare SEO and Structured Data variables BEFORE layout-header inclusion
 $seoConfig = file_exists(__DIR__ . '/../config/seo.php') ? require __DIR__ . '/../config/seo.php' : [];
 $baseUrl = rtrim($seoConfig['base_url'] ?? 'https://shop.lockinrank.com', '/');
 $canonicalUrl = $baseUrl . '/product/' . ($product['slug'] ?? $product['id']);
+
+$cleanTitle = trim(strip_tags($product['title']));
+$pageTitle = $cleanTitle . " — Lockinrank Shop";
+
+$rawDesc = trim(strip_tags($product['description'] ?? ''));
+$pageDescription = !empty($rawDesc) 
+    ? (mb_strlen($rawDesc) > 155 ? mb_substr($rawDesc, 0, 152) . '...' : $rawDesc)
+    : ($cleanTitle . ' - Download official study materials, DPPs, and practice sets by Lockinrank.');
 
 $schemaImages = [];
 $defaultFallbackImage = $baseUrl . '/images/default-study-material.png';
@@ -44,12 +48,20 @@ if (empty($schemaImages)) {
     $schemaImages[] = $defaultFallbackImage;
 }
 
+$ogType = 'product';
+$ogImage = $schemaImages[0];
+$ogPrice = number_format((float)($product['is_free'] ? 0 : $product['price']), 2, '.', '');
+
+$hideMobileBottomNav = true; // Replace bottom nav with Sticky Purchase Bar on product page
+include __DIR__ . '/layout-header.php'; 
+
+// Structured Data: Schema.org Product & BreadcrumbList
 $schemaData = [
     '@context' => 'https://schema.org/',
     '@type' => 'Product',
-    'name' => $product['title'],
-    'image' => !empty($schemaImages) ? $schemaImages : [$baseUrl . '/images/lockinrank-logo.png'],
-    'description' => trim(strip_tags($product['description'] ?? '')),
+    'name' => $cleanTitle,
+    'image' => $schemaImages,
+    'description' => $rawDesc ?: $pageDescription,
     'sku' => 'LOCKIN-PROD-' . $product['id'],
     'mpn' => 'LOCKIN-' . $product['id'],
     'brand' => [
@@ -60,7 +72,7 @@ $schemaData = [
         '@type' => 'Offer',
         'url' => $canonicalUrl,
         'priceCurrency' => $seoConfig['currency'] ?? 'INR',
-        'price' => number_format((float)($product['is_free'] ? 0 : $product['price']), 2, '.', ''),
+        'price' => $ogPrice,
         'priceValidUntil' => date('Y-12-31', strtotime('+1 year')),
         'availability' => 'https://schema.org/InStock',
         'itemCondition' => 'https://schema.org/NewCondition'
@@ -74,9 +86,37 @@ if (!empty($product['review_count']) && (int)$product['review_count'] > 0) {
         'reviewCount' => (int)$product['review_count']
     ];
 }
+
+$breadcrumbSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        [
+            '@type' => 'ListItem',
+            'position' => 1,
+            'name' => 'Home',
+            'item' => $baseUrl
+        ],
+        [
+            '@type' => 'ListItem',
+            'position' => 2,
+            'name' => $product['grade'] ?? 'Curriculum',
+            'item' => $baseUrl . '/?class=' . urlencode($product['grade'] ?? '')
+        ],
+        [
+            '@type' => 'ListItem',
+            'position' => 3,
+            'name' => $cleanTitle,
+            'item' => $canonicalUrl
+        ]
+    ]
+];
 ?>
 <script type="application/ld+json">
 <?= json_encode($schemaData, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) ?>
+</script>
+<script type="application/ld+json">
+<?= json_encode($breadcrumbSchema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) ?>
 </script>
 
 

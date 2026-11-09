@@ -1,5 +1,7 @@
 <?php 
 $pageTitle = "Contact Us — Lockinrank Shop Support";
+$pageDescription = "Contact Lockinrank academic support team for queries regarding JEE, NEET, or AP Physics study packages, order assistance, or downloads.";
+$canonicalUrl = "https://shop.lockinrank.com/contact";
 include __DIR__ . '/../layout-header.php'; 
 ?>
 

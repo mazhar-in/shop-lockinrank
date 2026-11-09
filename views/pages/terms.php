@@ -1,5 +1,7 @@
 <?php 
 $pageTitle = "Terms and Conditions — Lockinrank Shop";
+$pageDescription = "Terms and Conditions for Lockinrank Shop (LockInRank.com). Read about digital product licensing, usage rules, and customer purchase policies.";
+$canonicalUrl = "https://shop.lockinrank.com/terms";
 include __DIR__ . '/../layout-header.php'; 
 ?>
 
