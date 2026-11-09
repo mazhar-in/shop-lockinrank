@@ -186,7 +186,10 @@ $breadcrumbSchema = [
                                     data-index="<?= $idx ?>" 
                                     onclick="selectGalleryImage(<?= $idx ?>)"
                                     title="View Image <?= $idx + 1 ?>">
-                                <img src="<?= htmlspecialchars($imgUrl) ?>" alt="Sample preview <?= $idx + 1 ?>">
+                                <img src="<?= htmlspecialchars($imgUrl) ?>" 
+                                     alt="Sample preview <?= $idx + 1 ?>"
+                                     referrerpolicy="no-referrer"
+                                     onerror="this.onerror=null; this.src='/images/default-study-material.png';">
                                 <span class="gallery-thumb-index"><?= $idx + 1 ?></span>
                             </button>
                         <?php endforeach; ?>

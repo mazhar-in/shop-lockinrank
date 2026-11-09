@@ -52,6 +52,7 @@ class ImageOptimizer
             $safeName = $prefix . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.svg';
             $dest = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
             if (move_uploaded_file($tmpPath, $dest) || copy($tmpPath, $dest)) {
+                @chmod($dest, 0644);
                 return '/uploads/products/' . $safeName;
             }
             return null;
@@ -121,6 +122,7 @@ class ImageOptimizer
             imagedestroy($dstImage);
 
             if (file_exists($dest) && filesize($dest) > 0) {
+                @chmod($dest, 0644);
                 @unlink($tmpPath);
                 return '/uploads/products/' . $safeName;
             }
@@ -132,6 +134,7 @@ class ImageOptimizer
         $safeName = $prefix . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $dest = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
         if (move_uploaded_file($tmpPath, $dest) || copy($tmpPath, $dest)) {
+            @chmod($dest, 0644);
             return '/uploads/products/' . $safeName;
         }
 
