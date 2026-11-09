@@ -6,6 +6,8 @@
     <title><?= htmlspecialchars($pageTitle ?? 'Publish Material — Lockinrank Shop Admin') ?></title>
     <!-- Pico CSS v2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <!-- KaTeX CSS for Math Formula Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -305,16 +307,19 @@
                     </div>
                 </div>
 
-                <!-- Description with Markdown Toolbar -->
+                <!-- Description with Markdown & KaTeX Toolbar -->
                 <div style="margin-bottom: 2rem;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
                         <label for="description" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0;">
                             Description & Key Highlights <span style="color: #ef4444;">*</span>
                             <span style="font-size: 0.75rem; font-weight: 600; color: #4338ca; background: #e0e7ff; padding: 0.15rem 0.5rem; border-radius: 4px; margin-left: 0.4rem;">
-                                <i class="fa-brands fa-markdown"></i> Markdown Enabled
+                                <i class="fa-brands fa-markdown"></i> Markdown
+                            </span>
+                            <span style="font-size: 0.75rem; font-weight: 600; color: #047857; background: #d1fae5; padding: 0.15rem 0.5rem; border-radius: 4px; margin-left: 0.3rem;">
+                                <i class="fa-solid fa-square-root-variable"></i> KaTeX Math
                             </span>
                         </label>
-                        <small style="color: #64748b; font-size: 0.78rem;">Supports **bold**, *italics*, tables, lists, links & headings</small>
+                        <small style="color: #64748b; font-size: 0.78rem;">Supports **bold**, *italics*, tables, lists, links &amp; KaTeX formulas ($x$ or $$)</small>
                     </div>
 
                     <!-- Markdown Toolbar -->
@@ -351,8 +356,31 @@
                         <button type="button" onclick="insertTableTemplate()" title="Insert Table" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
                             <i class="fa-solid fa-table"></i> Table
                         </button>
+                        <span style="color: #cbd5e1; margin: 0 0.1rem;">|</span>
+                        <button type="button" onclick="insertMd('$', '$', 'E = mc^2')" title="Inline Math ($formula$)" style="background: #fff; border: 1px solid #c7d2fe; color: #4338ca; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-weight: 700; font-family: serif;">
+                            <i class="fa-solid fa-square-root-variable"></i> $x$ Math
+                        </button>
+                        <button type="button" onclick="insertMd('$$\n', '\n$$', '\\int_0^\\infty f(x) dx')" title="Display Math ($$formula$$)" style="background: #fff; border: 1px solid #a7f3d0; color: #047857; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-weight: 700; font-family: serif;">
+                            $$ Display
+                        </button>
+                        <button type="button" onclick="toggleMdPreview()" id="previewToggleBtn" title="Toggle Rendered Preview" style="background: #eef2ff; border: 1px solid #c7d2fe; color: #4338ca; padding: 0.25rem 0.65rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-left: auto; font-weight: 700; margin-bottom: 0;">
+                            <i class="fa-solid fa-eye"></i> Live Preview
+                        </button>
                     </div>
-                    <textarea id="description" name="description" rows="7" placeholder="Detail the questions, difficulty levels, answer keys, and problem types included in this resource... (Markdown supported)" required style="font-size: 0.95rem; border-top-left-radius: 0; border-top-right-radius: 0;"></textarea>
+                    <textarea id="description" name="description" rows="7" placeholder="Detail the questions, difficulty levels, answer keys, and problem types included in this resource... (Markdown & KaTeX supported)" required style="font-size: 0.95rem; border-top-left-radius: 0; border-top-right-radius: 0; margin-bottom: 0;"></textarea>
+
+                    <!-- Live Markdown & KaTeX Preview Box -->
+                    <div id="mdPreviewContainer" style="display: none; background: #ffffff; border: 1.5px solid #c7d2fe; border-radius: 0 0 8px 8px; border-top: none; padding: 1.25rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); margin-top: -1px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.4rem;">
+                            <span style="font-size: 0.75rem; font-weight: 800; color: #4338ca; text-transform: uppercase; letter-spacing: 0.05em;">
+                                <i class="fa-solid fa-sparkles"></i> Live Storefront Preview (Markdown + KaTeX)
+                            </span>
+                            <span style="font-size: 0.72rem; color: #64748b;">Updates on click</span>
+                        </div>
+                        <div id="mdPreviewContent" class="markdown-content" style="min-height: 50px;">
+                            <em style="color: #94a3b8;">Type description above and click "Live Preview" to preview...</em>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Actions -->
@@ -574,6 +602,57 @@
                 previewSelectedFiles(input);
             }, false);
         }
+
+        let isPreviewOpen = false;
+        async function toggleMdPreview() {
+            const container = document.getElementById('mdPreviewContainer');
+            const content = document.getElementById('mdPreviewContent');
+            const btn = document.getElementById('previewToggleBtn');
+            const textarea = document.getElementById('description');
+
+            if (!container || !content) return;
+
+            if (isPreviewOpen) {
+                container.style.display = 'none';
+                isPreviewOpen = false;
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-eye"></i> Live Preview';
+                return;
+            }
+
+            container.style.display = 'block';
+            isPreviewOpen = true;
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Close Preview';
+            content.innerHTML = '<span style="color: #64748b;"><i class="fa-solid fa-spinner fa-spin"></i> Rendering markdown & math...</span>';
+
+            try {
+                const resp = await fetch('/admin/preview-markdown', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ markdown: textarea.value })
+                });
+                const data = await resp.json();
+                content.innerHTML = data.html || '<em style="color:#94a3b8;">(Empty description)</em>';
+
+                if (typeof renderMathInElement === 'function') {
+                    renderMathInElement(content, {
+                        delimiters: [
+                            { left: '$$', right: '$$', display: true },
+                            { left: '\\[', right: '\\]', display: true },
+                            { left: '\\(', right: '\\)', display: false },
+                            { left: '$', right: '$', display: false }
+                        ],
+                        ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],
+                        throwOnError: false
+                    });
+                }
+            } catch (err) {
+                content.innerHTML = '<span style="color:#ef4444;">Preview failed to load.</span>';
+            }
+        }
     </script>
+
+    <!-- KaTeX Math Engine for Admin Preview -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 </body>
 </html>

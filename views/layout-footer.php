@@ -106,5 +106,32 @@
             document.getElementById('preview-modal').close();
         }
     </script>
+
+    <!-- KaTeX Math Engine & Auto-Renderer -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous" onload="renderLockinrankMath()"></script>
+    <script>
+        function renderLockinrankMath(rootEl) {
+            const target = rootEl || document.body;
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(target, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '\\[', right: '\\]', display: true },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],
+                    throwOnError: false
+                });
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            renderLockinrankMath();
+        });
+        document.addEventListener('htmx:afterSwap', function(evt) {
+            renderLockinrankMath(evt.detail.target);
+        });
+    </script>
 </body>
 </html>

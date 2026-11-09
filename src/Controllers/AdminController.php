@@ -148,6 +148,17 @@ class AdminController
     }
 
     /**
+     * Preview Markdown and KaTeX math in real-time
+     */
+    public static function previewMarkdown()
+    {
+        self::checkAuth();
+        $raw = Flight::request()->data['markdown'] ?? '';
+        $html = \App\Services\MarkdownParser::render($raw);
+        Flight::json(['html' => $html]);
+    }
+
+    /**
      * Render Admin Security & Settings page
      */
     public static function settings()

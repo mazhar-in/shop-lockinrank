@@ -16,19 +16,64 @@ class MarkdownParser
         // Normalize line endings
         $text = str_replace(["\r\n", "\r"], "\n", $markdown);
 
-        // Escape raw HTML entities to prevent XSS
-        $text = htmlspecialchars($text, ENT_NOQUOTES, 'UTF-8');
-
-        // Extract and protect fenced code blocks
+        // 1. Extract and protect fenced code blocks
         $codeBlocks = [];
         $text = preg_replace_callback('/```([a-zA-Z0-9_-]*)\n(.*?)```/s', function ($matches) use (&$codeBlocks) {
             $key = '%%CODEBLOCK_' . count($codeBlocks) . '%%';
             $lang = htmlspecialchars($matches[1], ENT_QUOTES, 'UTF-8');
-            $code = $matches[2];
+            $code = htmlspecialchars($matches[2], ENT_NOQUOTES, 'UTF-8');
             $class = !empty($lang) ? ' class="language-' . $lang . '"' : '';
             $codeBlocks[$key] = '<pre class="code-block"><code' . $class . '>' . $code . '</code></pre>';
+            return "\n\n" . $key . "\n\n";
+        }, $text);
+
+        // 2. Extract and protect Display Math: $$ ... $$
+        $mathBlocks = [];
+        $text = preg_replace_callback('/\$\$(.*?)\$\$/s', function ($m) use (&$mathBlocks) {
+            $key = '%%MATH_DISPLAY_' . count($mathBlocks) . '%%';
+            $mathBlocks[$key] = [
+                'type' => 'display',
+                'html' => '<div class="katex-display-math">$$' . htmlspecialchars($m[1], ENT_NOQUOTES, 'UTF-8') . '$$</div>'
+            ];
+            return "\n\n" . $key . "\n\n";
+        }, $text);
+
+        // 3. Extract and protect Display Math: \[ ... \]
+        $text = preg_replace_callback('/\\\\\[(.*?)\\\\\]/s', function ($m) use (&$mathBlocks) {
+            $key = '%%MATH_DISPLAY_' . count($mathBlocks) . '%%';
+            $mathBlocks[$key] = [
+                'type' => 'display',
+                'html' => '<div class="katex-display-math">\[' . htmlspecialchars($m[1], ENT_NOQUOTES, 'UTF-8') . '\]</div>'
+            ];
+            return "\n\n" . $key . "\n\n";
+        }, $text);
+
+        // 4. Extract and protect Inline Math: \( ... \)
+        $text = preg_replace_callback('/\\\\\((.*?)\\\\\)/s', function ($m) use (&$mathBlocks) {
+            $key = '%%MATH_INLINE_' . count($mathBlocks) . '%%';
+            $mathBlocks[$key] = [
+                'type' => 'inline',
+                'html' => '<span class="katex-inline-math">\(' . htmlspecialchars($m[1], ENT_NOQUOTES, 'UTF-8') . '\)</span>'
+            ];
             return $key;
         }, $text);
+
+        // 5. Extract and protect Inline Math: $ ... $
+        // Pandoc/GitHub math rule: opening $ not followed by whitespace, closing $ not preceded by whitespace or \
+        $text = preg_replace_callback('/(?<![\\\\\w])\$(?!\s)(.*?)(?<!\s)(?<!\\\\)\$(?!\d)/s', function ($m) use (&$mathBlocks) {
+            if (str_contains($m[1], "\n\n")) {
+                return $m[0];
+            }
+            $key = '%%MATH_INLINE_' . count($mathBlocks) . '%%';
+            $mathBlocks[$key] = [
+                'type' => 'inline',
+                'html' => '<span class="katex-inline-math">$' . htmlspecialchars($m[1], ENT_NOQUOTES, 'UTF-8') . '$</span>'
+            ];
+            return $key;
+        }, $text);
+
+        // Escape raw HTML entities to prevent XSS on remaining content
+        $text = htmlspecialchars($text, ENT_NOQUOTES, 'UTF-8');
 
         // Parse tables
         $text = self::parseTables($text);
@@ -45,6 +90,12 @@ class MarkdownParser
 
             // Check if block is a code block placeholder
             if (preg_match('/^%%CODEBLOCK_\d+%%$/', $block)) {
+                $outputBlocks[] = $block;
+                continue;
+            }
+
+            // Check if block is a display math placeholder
+            if (preg_match('/^%%MATH_DISPLAY_\d+%%$/', $block)) {
                 $outputBlocks[] = $block;
                 continue;
             }
@@ -157,6 +208,11 @@ class MarkdownParser
         // Restore code blocks
         foreach ($codeBlocks as $placeholder => $codeHtml) {
             $html = str_replace($placeholder, $codeHtml, $html);
+        }
+
+        // Restore math blocks
+        foreach ($mathBlocks as $placeholder => $data) {
+            $html = str_replace($placeholder, $data['html'], $html);
         }
 
         return $html;

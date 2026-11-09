@@ -66,6 +66,7 @@ Flight::route('POST /admin/product/edit/@id:[0-9]+', [AdminController::class, 'u
 Flight::route('GET|POST /admin/product/delete/@id:[0-9]+', [AdminController::class, 'deleteProduct']);
 Flight::route('POST /admin/products/bulk-delete', [AdminController::class, 'bulkDeleteProducts']);
 Flight::route('POST /admin/products/import-json', [AdminController::class, 'importJson']);
+Flight::route('POST /admin/preview-markdown', [AdminController::class, 'previewMarkdown']);
 Flight::route('GET /admin/products/export-sample-json', [AdminController::class, 'exportSampleJson']);
 Flight::route('GET /admin/settings', [AdminController::class, 'settings']);
 Flight::route('GET /admin/change-password', [AdminController::class, 'settings']);

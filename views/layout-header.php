@@ -78,6 +78,8 @@ $seoType = !empty($ogType) ? $ogType : 'website';
 
     <!-- Pico CSS v2 (Ultra-lightweight ~10KB) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <!-- KaTeX CSS (Academic Physics & Math Formula Engine) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
     <!-- Custom High-Contrast Theme -->
     <link rel="stylesheet" href="/css/app.css">
     <!-- HTMX (Instant reactivity without node build tools) -->

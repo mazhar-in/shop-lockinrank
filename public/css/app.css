@@ -1441,5 +1441,43 @@ a.nav-cart-btn:active,
     border: 1px solid #e2e8f0;
 }
 
+/* ==========================================================================
+   📐 KATEX FORMULA RENDERING & RESPONSIVE MATH OVERFLOW
+   ========================================================================== */
+.katex {
+    font-size: 1.08em;
+    text-rendering: auto;
+    line-height: normal;
+}
+
+.markdown-content .katex {
+    color: #0f172a;
+}
+
+.katex-display-math {
+    margin: 1.25rem 0;
+    padding: 0.85rem 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+.katex-display-math .katex-display {
+    margin: 0 !important;
+    padding: 0.25rem 0;
+}
+
+.katex-inline-math {
+    display: inline-block;
+    padding: 0 0.15rem;
+    vertical-align: baseline;
+}
+
+
 
 
