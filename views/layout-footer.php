@@ -36,7 +36,7 @@
     <!-- Site Footer with Legal Links & Compliance -->
     <footer class="site-footer" style="background-color: #ffffff; border-top: 1px solid #e2e8f0; padding: 2.5rem 0 2rem 0; margin-top: auto; position: relative; z-index: 10;">
         <div class="container">
-            <div class="grid" style="grid-template-columns: 2fr 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            <div class="footer-grid">
                 
                 <!-- Col 1: Store Bio -->
                 <div>

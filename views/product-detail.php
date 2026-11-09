@@ -121,12 +121,12 @@ $breadcrumbSchema = [
 
 
 <!-- Breadcrumbs -->
-<nav aria-label="breadcrumb" style="margin-bottom: 1.5rem; font-size: 0.85rem;">
+<nav aria-label="breadcrumb" class="product-breadcrumbs" style="margin-bottom: 1.5rem; font-size: 0.85rem;">
     <ul>
         <li><a href="/">Home</a></li>
         <li><a href="/?board=<?= urlencode($product['board'] ?? 'CBSE') ?>"><?= htmlspecialchars($product['board'] ?? 'CBSE') ?></a></li>
         <li><a href="/?class=<?= urlencode($product['grade']) ?>"><?= htmlspecialchars($product['grade']) ?></a></li>
-        <li><?= htmlspecialchars($product['title']) ?></li>
+        <li class="breadcrumb-current" title="<?= htmlspecialchars($product['title']) ?>"><?= htmlspecialchars($product['title']) ?></li>
     </ul>
 </nav>
 
@@ -412,11 +412,11 @@ $breadcrumbSchema = [
         </div>
 
         <!-- Specifications Table -->
-        <div style="font-size: 0.85rem;">
-            <table style="margin-bottom: 0;">
+        <div class="product-specs-wrap" style="font-size: 0.85rem; width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table style="margin-bottom: 0; width: 100%;">
                 <tbody>
                     <tr>
-                        <td style="color: var(--pico-muted-color); width: 140px;"><strong>Board Alignment:</strong></td>
+                        <td style="color: var(--pico-muted-color); width: 140px; min-width: 110px;"><strong>Board Alignment:</strong></td>
                         <td><strong><?= htmlspecialchars($product['board'] ?? 'CBSE') ?></strong></td>
                     </tr>
                     <tr>
@@ -532,7 +532,7 @@ $breadcrumbSchema = [
     $avgRating = (float)($product['rating'] ?? 5.0);
     ?>
     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; align-items: center;">
+        <div class="reviews-dashboard-grid">
             
             <!-- Overall Score Block -->
             <div style="text-align: center; padding-right: 1rem; border-right: 1px solid #f1f5f9;">
@@ -621,7 +621,7 @@ $breadcrumbSchema = [
             </div>
 
             <!-- Two Columns: Author Name & Role -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="review-form-fields-grid">
                 <div>
                     <label style="font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 0.35rem; display: block;">
                         Your Name <span style="color: #ef4444;">*</span>

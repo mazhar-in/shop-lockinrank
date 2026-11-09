@@ -9,6 +9,11 @@
     --tpt-red: #ef4444;
 }
 
+html, body {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
 body {
     min-height: 100vh;
     display: flex;
@@ -21,6 +26,8 @@ main.container {
     flex: 1;
     padding-top: 1.5rem;
     padding-bottom: 3rem;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 /* Header & Nav */
@@ -835,6 +842,94 @@ a.nav-cart-btn:active,
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2.5rem;
+    width: 100%;
+    max-width: 100%;
+}
+
+.product-detail-layout > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+}
+
+.markdown-content,
+.product-detail-layout h1,
+.product-detail-layout h2,
+.product-detail-layout h3 {
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+}
+
+/* Product Breadcrumbs */
+.product-breadcrumbs {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    white-space: normal !important;
+    margin-bottom: 1.25rem !important;
+}
+.product-breadcrumbs ul {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    white-space: normal !important;
+    align-items: center !important;
+    gap: 0.25rem 0.5rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    list-style: none !important;
+}
+.product-breadcrumbs ul li {
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    font-size: 0.85rem !important;
+}
+
+/* Footer Grid */
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Responsive Table Wrapper */
+.table-responsive {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 1.25rem 0 !important;
+}
+.table-responsive table,
+.markdown-table {
+    width: 100% !important;
+    min-width: 480px;
+    border-collapse: collapse !important;
+}
+.product-specs-wrap table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+.product-specs-wrap td {
+    word-break: break-word !important;
+}
+
+/* Reviews Dashboard & Form Grids */
+.reviews-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    align-items: center;
+}
+.review-form-fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 /* Cart Responsive Layout */
@@ -1343,6 +1438,45 @@ a.nav-cart-btn:active,
     /* Cart Inputs on Mobile (16px prevents iOS zoom) */
     .cart-layout input {
         font-size: 16px !important;
+    }
+
+    /* Mobile Breadcrumbs */
+    .product-breadcrumbs {
+        margin-bottom: 0.75rem !important;
+    }
+    .product-breadcrumbs ul li {
+        font-size: 0.78rem !important;
+    }
+    .product-breadcrumbs ul li.breadcrumb-current {
+        display: -webkit-box !important;
+        -webkit-line-clamp: 1 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 200px !important;
+        word-break: break-all !important;
+    }
+
+    /* Mobile Footer Grid */
+    .footer-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+
+    /* Mobile Reviews Grid */
+    .reviews-dashboard-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+    }
+    .reviews-dashboard-grid > div:first-child {
+        border-right: none !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding-right: 0 !important;
+        padding-bottom: 1rem !important;
+    }
+    .review-form-fields-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
     }
 }
 
