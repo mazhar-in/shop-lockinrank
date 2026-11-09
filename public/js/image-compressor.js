@@ -207,3 +207,4 @@ function removeCompressedFile(removeIndex, inputId, containerId, badgePrefix) {
     input.files = dt.files;
     processAndCompressInput(input, containerId, badgePrefix);
 }
+

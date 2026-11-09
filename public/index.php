@@ -6,6 +6,7 @@ if (php_sapi_name() === 'cli-server') {
     if ($path !== '/' && file_exists(__DIR__ . $path) && !is_dir(__DIR__ . $path)) {
         return false;
     }
+    $_SERVER['SCRIPT_NAME'] = '/index.php';
 }
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -16,6 +17,7 @@ use App\Controllers\StoreController;
 use App\Controllers\CartController;
 use App\Controllers\AdminController;
 use App\Controllers\PageController;
+use App\Controllers\FeedController;
 
 // Configure Flight views directory
 Flight::set('flight.views.path', __DIR__ . '/../views');
@@ -75,6 +77,11 @@ Flight::route('GET /shipping', [PageController::class, 'shipping']);
 Flight::route('GET /cancellation-refunds', [PageController::class, 'refunds']);
 Flight::route('GET /contact', [PageController::class, 'contact']);
 Flight::route('POST /contact', [PageController::class, 'submitContact']);
+
+// --- Google Merchant Center & Shopping Feeds ---
+Flight::route('GET /feed/google-merchant.xml', [FeedController::class, 'googleMerchantXml']);
+Flight::route('GET /google-shopping-feed.xml', [FeedController::class, 'googleMerchantXml']);
+Flight::route('GET /google@hash:[a-zA-Z0-9_-]+.html', [FeedController::class, 'googleVerification']);
 
 // 404 Handler
 Flight::map('notFound', function () {

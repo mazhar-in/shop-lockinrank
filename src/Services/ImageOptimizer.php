@@ -213,3 +213,4 @@ class ImageOptimizer
         return $image;
     }
 }
+

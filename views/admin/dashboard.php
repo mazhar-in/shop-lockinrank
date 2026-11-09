@@ -99,6 +99,79 @@
             </div>
         </div>
 
+        <!-- Google Merchant Center Integration Card -->
+        <?php
+        $adminSeo = file_exists(__DIR__ . '/../../config/seo.php') ? require __DIR__ . '/../../config/seo.php' : [];
+        $feedDomain = rtrim($adminSeo['base_url'] ?? 'https://shop.lockinrank.com', '/');
+        $feedLiveUrl = $feedDomain . '/feed/google-merchant.xml';
+        ?>
+        <div style="background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); border: 1px solid #bfdbfe; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.06);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="background-color: #3b82f6; color: #ffffff; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                        <i class="fa-brands fa-google"></i>
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <h3 style="font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0;">Google Merchant Center &amp; Shopping Feed</h3>
+                            <span style="background-color: #dcfce7; color: #15803d; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.3rem;">
+                                <span style="width: 7px; height: 7px; background-color: #22c55e; border-radius: 50%; display: inline-block;"></span> Live RSS 2.0
+                            </span>
+                        </div>
+                        <p style="font-size: 0.82rem; color: #64748b; margin: 0.2rem 0 0 0;">
+                            Sync your digital study catalog with Google Shopping, Free Product Listings, and Search automatically.
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="/feed/google-merchant.xml" target="_blank" role="button" style="background-color: #ffffff; border: 1px solid #cbd5e1; color: #1e293b !important; font-size: 0.82rem; font-weight: 700; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Preview XML
+                    </a>
+                </div>
+            </div>
+
+            <!-- Feed URL Bar with Copy Button -->
+            <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.5rem 0.75rem; display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                <span style="font-size: 0.78rem; font-weight: 800; color: #475569; text-transform: uppercase; white-space: nowrap;">Feed URL:</span>
+                <input type="text" id="gmcFeedUrlInput" value="<?= htmlspecialchars($feedLiveUrl) ?>" readonly style="margin: 0; padding: 0.25rem 0.5rem; font-family: monospace; font-size: 0.85rem; border: none; background: transparent; width: 100%; color: #0f172a;" onclick="this.select();">
+                <button type="button" id="copyFeedUrlBtn" onclick="copyFeedUrl()" style="margin: 0; padding: 0.4rem 0.85rem; font-size: 0.8rem; font-weight: 700; white-space: nowrap; border-radius: 6px; background-color: #3b82f6; border-color: #3b82f6; color: #ffffff;">
+                    <i class="fa-regular fa-copy"></i> Copy Feed URL
+                </button>
+            </div>
+
+            <!-- 3-Step Setup Guide Accordion/Notes -->
+            <div style="background-color: #f8fafc; border-left: 3px solid #3b82f6; padding: 0.75rem 1rem; border-radius: 0 6px 6px 0; font-size: 0.8rem; color: #475569;">
+                <div style="font-weight: 800; color: #1e293b; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                    <i class="fa-solid fa-circle-info" style="color: #3b82f6;"></i> How to connect with Google Merchant Center:
+                </div>
+                <ol style="margin: 0; padding-left: 1.25rem; line-height: 1.6;">
+                    <li>Log into <a href="https://merchants.google.com" target="_blank" style="font-weight: 700; color: #2563eb;">Google Merchant Center</a> and claim your store domain (<code>shop.lockinrank.com</code>).</li>
+                    <li>Go to <strong>Products &rarr; Feeds &rarr; Add Product Feed</strong> &rarr; Select <strong>Scheduled Fetch</strong>.</li>
+                    <li>Paste the <strong>Feed URL</strong> above and set the fetch frequency to <strong>Daily</strong>. Google will automatically sync prices, stock, and new products!</li>
+                </ol>
+            </div>
+        </div>
+
+        <script>
+        function copyFeedUrl() {
+            var input = document.getElementById('gmcFeedUrlInput');
+            var btn = document.getElementById('copyFeedUrlBtn');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value).then(function() {
+                var originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                btn.style.backgroundColor = '#16a34a';
+                btn.style.borderColor = '#16a34a';
+                setTimeout(function() {
+                    btn.innerHTML = originalHtml;
+                    btn.style.backgroundColor = '#3b82f6';
+                    btn.style.borderColor = '#3b82f6';
+                }, 2000);
+            });
+        }
+        </script>
+
         <!-- Two Column Section: Recent Orders & Catalog Highlights -->
         <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
 

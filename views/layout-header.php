@@ -22,6 +22,12 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <!-- Simple Icon Font -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <?php
+    $siteSeoConfig = file_exists(__DIR__ . '/../config/seo.php') ? require __DIR__ . '/../config/seo.php' : [];
+    if (!empty($siteSeoConfig['google_site_verification'])): ?>
+    <!-- Google Merchant Center / Search Console Verification -->
+    <meta name="google-site-verification" content="<?= htmlspecialchars($siteSeoConfig['google_site_verification']) ?>">
+    <?php endif; ?>
 </head>
 <body>
 
