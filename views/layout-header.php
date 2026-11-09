@@ -89,7 +89,7 @@ $seoType = !empty($ogType) ? $ogType : 'website';
     <!-- KaTeX CSS (Academic Physics & Math Formula Engine) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
     <!-- Custom High-Contrast Theme (Minified & Optimized) -->
-    <link rel="stylesheet" href="/css/app.min.css?v=2.1">
+    <link rel="stylesheet" href="/css/app.min.css?v=2.2">
     <!-- HTMX (Instant reactivity without node build tools) -->
     <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
     <!-- Simple Icon Font -->

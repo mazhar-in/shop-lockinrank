@@ -6,10 +6,14 @@
     </div>
 <?php else: ?>
     <?php foreach ($products as $p): ?>
+        <?php $thumbImg = !empty($p['thumbnail_url']) ? $p['thumbnail_url'] : '/images/default-study-material.png'; ?>
         <div class="product-card">
             <div class="product-thumbnail-wrap">
-                <a href="/product/<?= htmlspecialchars($p['slug']) ?>">
-                    <img src="<?= htmlspecialchars($p['thumbnail_url']) ?>" alt="<?= htmlspecialchars($p['title']) ?>" loading="lazy">
+                <a href="/product/<?= htmlspecialchars($p['slug']) ?>" class="product-thumb-link" aria-label="View <?= htmlspecialchars($p['title']) ?>">
+                    <img src="<?= htmlspecialchars($thumbImg) ?>" 
+                         alt="<?= htmlspecialchars($p['title']) ?>" 
+                         loading="lazy"
+                         onerror="this.onerror=null; this.src='/images/default-study-material.png';">
                 </a>
                 <div class="badge-overlay">
                     <span class="chip" style="background: #0284c7;"><?= htmlspecialchars($p['board'] ?? 'CBSE') ?></span>

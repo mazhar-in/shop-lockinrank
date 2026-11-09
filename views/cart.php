@@ -27,7 +27,12 @@ include __DIR__ . '/layout-header.php';
         <div>
             <?php foreach ($items as $item): ?>
                 <div style="display: flex; gap: 1rem; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
-                    <img src="<?= htmlspecialchars($item['thumbnail_url']) ?>" alt="Thumbnail" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px;">
+                    <a href="/product/<?= htmlspecialchars($item['slug'] ?? '') ?>" style="display: block; flex-shrink: 0;" title="View <?= htmlspecialchars($item['title']) ?>">
+                        <img src="<?= htmlspecialchars(!empty($item['thumbnail_url']) ? $item['thumbnail_url'] : '/images/default-study-material.png') ?>" 
+                             alt="<?= htmlspecialchars($item['title']) ?>" 
+                             onerror="this.onerror=null; this.src='/images/default-study-material.png';"
+                             style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; display: block;">
+                    </a>
                     <div style="flex: 1;">
                         <h4 style="font-size: 1rem; margin-bottom: 0.25rem; font-weight: 700; color: #0f172a;">
                             <?= htmlspecialchars($item['title']) ?>

@@ -138,8 +138,9 @@ $breadcrumbSchema = [
             <!-- Main Display Stage -->
             <div class="product-gallery-stage" id="galleryStage" onclick="triggerMainPreview()">
                 <img id="mainGalleryImage" 
-                     src="<?= htmlspecialchars($previewImages[0] ?? $product['thumbnail_url']) ?>" 
-                     alt="<?= htmlspecialchars($product['title']) ?>">
+                     src="<?= htmlspecialchars($previewImages[0] ?? (!empty($product['thumbnail_url']) ? $product['thumbnail_url'] : '/images/default-study-material.png')) ?>" 
+                     alt="<?= htmlspecialchars($product['title']) ?>"
+                     onerror="this.onerror=null; this.src='/images/default-study-material.png';">
                 
                 <div class="watermark-overlay" style="font-size: 1.8rem; padding: 0.35rem 1.25rem;">PREVIEW ONLY</div>
                 
@@ -861,10 +862,14 @@ function toggleReviewForm() {
 
     <div class="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.25rem;">
         <?php foreach ($related as $rel): ?>
+            <?php $relThumb = !empty($rel['thumbnail_url']) ? $rel['thumbnail_url'] : '/images/default-study-material.png'; ?>
             <div class="product-card">
                 <div class="product-thumbnail-wrap">
-                    <a href="/product/<?= htmlspecialchars($rel['slug']) ?>">
-                        <img src="<?= htmlspecialchars($rel['thumbnail_url']) ?>" alt="<?= htmlspecialchars($rel['title']) ?>" loading="lazy">
+                    <a href="/product/<?= htmlspecialchars($rel['slug']) ?>" class="product-thumb-link" aria-label="View <?= htmlspecialchars($rel['title']) ?>">
+                        <img src="<?= htmlspecialchars($relThumb) ?>" 
+                             alt="<?= htmlspecialchars($rel['title']) ?>" 
+                             loading="lazy"
+                             onerror="this.onerror=null; this.src='/images/default-study-material.png';">
                     </a>
                     <div class="badge-overlay">
                         <span class="chip" style="background: #0284c7;"><?= htmlspecialchars($rel['board'] ?? 'CBSE') ?></span>
