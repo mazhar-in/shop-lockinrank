@@ -285,6 +285,8 @@ class AdminController
         $title = trim(Flight::request()->data['title'] ?? '');
         $description = trim(Flight::request()->data['description'] ?? '');
         $price = (float)(Flight::request()->data['price'] ?? 0);
+        $rawMrp = Flight::request()->data['mrp'] ?? null;
+        $mrp = ($rawMrp !== null && $rawMrp !== '') ? (float)$rawMrp : null;
         $isFree = isset(Flight::request()->data['is_free']) || $price == 0 ? 1 : 0;
         if ($isFree) $price = 0.00;
 
@@ -347,12 +349,12 @@ class AdminController
 
         $stmt = $db->prepare("
             INSERT INTO products 
-            (store_id, title, slug, description, price, is_free, grade, board, subject, resource_type, file_format, page_count, is_ink_friendly, standards, thumbnail_url, preview_images, material_file_path, sample_file_path, category_id, tags, rating, review_count, sales_count, sample_downloads)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 5.0, 0, 0, 0)
+            (store_id, title, slug, description, price, mrp, is_free, grade, board, subject, resource_type, file_format, page_count, is_ink_friendly, standards, thumbnail_url, preview_images, material_file_path, sample_file_path, category_id, tags, rating, review_count, sales_count, sample_downloads)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 5.0, 0, 0, 0)
         ");
 
         $stmt->execute([
-            $storeId, $title, $slug, $description, $price, $isFree, $exam, $board, $subject, $type, $format, $pageCount, $inkFriendly, $standards, $thumbnail, $previewImages, $materialFilePath, $sampleFilePath, $categoryId, $tags
+            $storeId, $title, $slug, $description, $price, $mrp, $isFree, $exam, $board, $subject, $type, $format, $pageCount, $inkFriendly, $standards, $thumbnail, $previewImages, $materialFilePath, $sampleFilePath, $categoryId, $tags
         ]);
 
         Flight::redirect('/admin');
@@ -434,6 +436,8 @@ class AdminController
         $title = trim(Flight::request()->data['title'] ?? '');
         $description = trim(Flight::request()->data['description'] ?? '');
         $price = (float)(Flight::request()->data['price'] ?? 0);
+        $rawMrp = Flight::request()->data['mrp'] ?? null;
+        $mrp = ($rawMrp !== null && $rawMrp !== '') ? (float)$rawMrp : null;
         $isFree = isset(Flight::request()->data['is_free']) || $price == 0 ? 1 : 0;
         if ($isFree) $price = 0.00;
 
@@ -511,6 +515,7 @@ class AdminController
                 title = ?,
                 description = ?,
                 price = ?,
+                mrp = ?,
                 is_free = ?,
                 grade = ?,
                 board = ?,
@@ -530,7 +535,7 @@ class AdminController
         ");
 
         $updateStmt->execute([
-            $title, $description, $price, $isFree, $exam, $board, $subject, $type, $format, $pageCount, $inkFriendly, $standards, $thumbnail, $previewImages, $materialFilePath, $sampleFilePath, $categoryId, $tags, (int)$id
+            $title, $description, $price, $mrp, $isFree, $exam, $board, $subject, $type, $format, $pageCount, $inkFriendly, $standards, $thumbnail, $previewImages, $materialFilePath, $sampleFilePath, $categoryId, $tags, (int)$id
         ]);
 
         $_SESSION['admin_flash_success'] = "Resource updated successfully.";

@@ -16,6 +16,12 @@
                     <span class="chip"><?= htmlspecialchars($p['grade']) ?></span>
                     <?php if ($p['is_free']): ?>
                         <span class="chip chip-free">FREEBIE</span>
+                    <?php elseif (!empty($p['mrp']) && (float)$p['mrp'] > (float)$p['price']): 
+                        $cardDiscount = round((((float)$p['mrp'] - (float)$p['price']) / (float)$p['mrp']) * 100);
+                    ?>
+                        <span class="chip" style="background: #16a34a; color: #ffffff; font-weight: 800;">
+                            <?= $cardDiscount ?>% OFF
+                        </span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -61,11 +67,24 @@
                 </div>
 
                 <div class="product-card-footer">
-                    <div>
-                        <?php if ($p['is_free']): ?>
-                            <span class="product-price price-free">FREE</span>
-                        <?php else: ?>
-                            <span class="product-price">₹<?= number_format($p['price'], 0) ?></span>
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2;">
+                        <div style="display: flex; align-items: baseline; gap: 0.35rem; flex-wrap: wrap;">
+                            <?php if ($p['is_free']): ?>
+                                <span class="product-price price-free">FREE</span>
+                            <?php else: ?>
+                                <span class="product-price">₹<?= number_format($p['price'], 0) ?></span>
+                            <?php endif; ?>
+
+                            <?php if (!empty($p['mrp']) && (float)$p['mrp'] > (float)$p['price']): ?>
+                                <span style="text-decoration: line-through; color: #94a3b8; font-size: 0.8rem; font-weight: 600;">₹<?= number_format($p['mrp'], 0) ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <?php if (!empty($p['mrp']) && (float)$p['mrp'] > (float)$p['price']): 
+                            $footerDiscount = round((((float)$p['mrp'] - (float)$p['price']) / (float)$p['mrp']) * 100);
+                        ?>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: #16a34a; margin-top: 0.15rem;">
+                                Save <?= $footerDiscount ?>%
+                            </span>
                         <?php endif; ?>
                     </div>
 

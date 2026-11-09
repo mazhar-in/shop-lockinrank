@@ -344,12 +344,35 @@ $breadcrumbSchema = [
         <?php endif; ?>
 
         <!-- Price & Buy Box -->
-        <div style="background-color: var(--pico-card-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <span style="font-size: 0.88rem; color: var(--pico-muted-color); text-transform: uppercase; font-weight: 700;">Single-Student / Personal Study License</span>
-                <span style="font-size: 1.8rem; font-weight: 800;">
-                    <?= $product['is_free'] ? '<span class="price-free">FREE</span>' : '₹' . number_format($product['price'], 0) ?>
+        <div style="background-color: var(--pico-card-background-color); border: 1px solid #cbd5e1; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <div style="margin-bottom: 1.25rem;">
+                <span style="font-size: 0.78rem; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; display: block; margin-bottom: 0.35rem;">
+                    Single-Student / Personal Study License
                 </span>
+                
+                <div style="display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;">
+                    <span style="font-size: 2.2rem; font-weight: 900; color: <?= $product['is_free'] ? '#16a34a' : '#0f172a' ?>; line-height: 1;">
+                        <?= $product['is_free'] ? 'FREE' : '₹' . number_format($product['price'], 0) ?>
+                    </span>
+
+                    <?php if (!empty($product['mrp']) && (float)$product['mrp'] > (float)$product['price']): 
+                        $prodDiscountPct = round((((float)$product['mrp'] - (float)$product['price']) / (float)$product['mrp']) * 100);
+                        $prodSavings = (float)$product['mrp'] - (float)$product['price'];
+                    ?>
+                        <span style="font-size: 1.05rem; color: #64748b; font-weight: 600;">
+                            M.R.P.: <span style="text-decoration: line-through;">₹<?= number_format($product['mrp'], 0) ?></span>
+                        </span>
+                        <span style="background-color: #dcfce7; color: #15803d; font-size: 0.88rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <i class="fa-solid fa-arrow-down" style="font-size: 0.75rem;"></i> <?= $prodDiscountPct ?>% OFF
+                        </span>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (!empty($product['mrp']) && (float)$product['mrp'] > (float)$product['price']): ?>
+                    <div style="font-size: 0.85rem; color: #16a34a; font-weight: 700; margin-top: 0.4rem;">
+                        <i class="fa-solid fa-circle-check"></i> You save ₹<?= number_format($prodSavings, 0) ?> (<?= $prodDiscountPct ?>% discount)
+                    </div>
+                <?php endif; ?>
             </div>
 
             <?php $isInCart = isset($_SESSION['cart'][$product['id']]); ?>
@@ -865,11 +888,23 @@ function toggleReviewForm() {
                     </div>
 
                     <div class="product-card-footer" style="margin-top: auto; padding-top: 0.65rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <?php if ($rel['is_free']): ?>
-                                <span class="product-price price-free" style="font-size: 1rem; font-weight: 800;">FREE</span>
-                            <?php else: ?>
-                                <span class="product-price" style="font-size: 1rem; font-weight: 800; color: #0f172a;">₹<?= number_format($rel['price'], 0) ?></span>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2;">
+                            <div style="display: flex; align-items: baseline; gap: 0.35rem; flex-wrap: wrap;">
+                                <?php if ($rel['is_free']): ?>
+                                    <span class="product-price price-free" style="font-size: 1rem; font-weight: 800;">FREE</span>
+                                <?php else: ?>
+                                    <span class="product-price" style="font-size: 1rem; font-weight: 800; color: #0f172a;">₹<?= number_format($rel['price'], 0) ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($rel['mrp']) && (float)$rel['mrp'] > (float)$rel['price']): ?>
+                                    <span style="text-decoration: line-through; color: #94a3b8; font-size: 0.78rem; font-weight: 600;">₹<?= number_format($rel['mrp'], 0) ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <?php if (!empty($rel['mrp']) && (float)$rel['mrp'] > (float)$rel['price']): 
+                                $relDiscount = round((((float)$rel['mrp'] - (float)$rel['price']) / (float)$rel['mrp']) * 100);
+                            ?>
+                                <span style="font-size: 0.68rem; font-weight: 800; color: #16a34a; margin-top: 0.1rem;">
+                                    <?= $relDiscount ?>% OFF
+                                </span>
                             <?php endif; ?>
                         </div>
 
@@ -906,9 +941,17 @@ function toggleReviewForm() {
 <!-- Mobile Sticky Bottom Purchase Bar (Docked to bottom on mobile devices) -->
 <div class="mobile-sticky-purchase-bar" id="mobileStickyPurchaseBar">
     <div class="mobile-sticky-price-box">
-        <span class="mobile-sticky-price">
-            <?= $product['is_free'] ? '<span class="price-free">FREE</span>' : '₹' . number_format($product['price'], 0) ?>
-        </span>
+        <div style="display: flex; align-items: baseline; gap: 0.35rem;">
+            <span class="mobile-sticky-price">
+                <?= $product['is_free'] ? '<span class="price-free">FREE</span>' : '₹' . number_format($product['price'], 0) ?>
+            </span>
+            <?php if (!empty($product['mrp']) && (float)$product['mrp'] > (float)$product['price']): 
+                $mobDiscountPct = round((((float)$product['mrp'] - (float)$product['price']) / (float)$product['mrp']) * 100);
+            ?>
+                <span style="text-decoration: line-through; color: #94a3b8; font-size: 0.78rem; font-weight: 600;">₹<?= number_format($product['mrp'], 0) ?></span>
+                <span style="background: #dcfce7; color: #15803d; font-size: 0.68rem; font-weight: 800; padding: 0.05rem 0.35rem; border-radius: 4px;"><?= $mobDiscountPct ?>% OFF</span>
+            <?php endif; ?>
+        </div>
         <span class="mobile-sticky-label">Single License</span>
     </div>
     <div class="mobile-sticky-action-box">

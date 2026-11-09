@@ -146,12 +146,28 @@
                                             <span class="chip" style="background: #4f46e5; color: #ffffff;"><?= htmlspecialchars($p['grade']) ?></span>
                                             <span class="chip" style="background: #e0e7ff; color: #3730a3;"><?= htmlspecialchars($p['board']) ?></span>
                                         </td>
-                                        <td style="padding: 0.85rem 0.5rem; font-weight: 800;">
-                                            <?php if ($p['is_free']): ?>
-                                                <span style="color: #16a34a;">FREE (₹0)</span>
-                                            <?php else: ?>
-                                                <span style="color: #0f172a;">₹<?= number_format($p['price'], 0) ?></span>
-                                            <?php endif; ?>
+                                        <td style="padding: 0.85rem 0.5rem;">
+                                            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                                                <div style="display: flex; align-items: baseline; gap: 0.35rem; flex-wrap: wrap;">
+                                                    <?php if ($p['is_free']): ?>
+                                                        <span style="color: #16a34a; font-weight: 900; font-size: 0.95rem;">FREE</span>
+                                                    <?php else: ?>
+                                                        <span style="color: #0f172a; font-weight: 900; font-size: 0.95rem;">₹<?= number_format($p['price'], 0) ?></span>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($p['mrp']) && (float)$p['mrp'] > (float)$p['price']): ?>
+                                                        <span style="text-decoration: line-through; color: #94a3b8; font-size: 0.78rem; font-weight: 600;">₹<?= number_format($p['mrp'], 0) ?></span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <?php if (!empty($p['mrp']) && (float)$p['mrp'] > (float)$p['price']): 
+                                                    $discountPct = round((((float)$p['mrp'] - (float)$p['price']) / (float)$p['mrp']) * 100);
+                                                ?>
+                                                    <div>
+                                                        <span style="background-color: #dcfce7; color: #15803d; font-size: 0.7rem; font-weight: 800; padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-block;">
+                                                            <?= $discountPct ?>% OFF
+                                                        </span>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
                                         </td>
                                         <td style="padding: 0.85rem 0.5rem; font-weight: 700; color: #4338ca;">
                                             <?php if ($p['is_free']): ?>

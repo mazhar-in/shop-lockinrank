@@ -112,22 +112,36 @@
                     </div>
                 </div>
 
-                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-                    <!-- Pricing -->
+                <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; align-items: start;">
+                    <!-- Selling Price -->
                     <div>
                         <label for="price" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.4rem;">
-                            Price in INR (₹) <span style="color: #ef4444;">*</span>
+                            Selling Price in INR (₹) <span style="color: #ef4444;">*</span>
                         </label>
-                        <input type="number" id="price" name="price" value="149" step="1" min="0" required style="font-size: 0.95rem;">
-                        <small style="color: #64748b; font-size: 0.78rem;">Set to ₹0 or check below to offer as a 100% Freebie.</small>
+                        <input type="number" id="price" name="price" value="149" step="1" min="0" required style="font-size: 0.95rem;" oninput="calcDiscount()">
+                        <small style="color: #64748b; font-size: 0.78rem;">Customer pays this amount.</small>
+                    </div>
+
+                    <!-- MRP / Original List Price -->
+                    <div>
+                        <label for="mrp" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.4rem;">
+                            M.R.P. / Original Price (₹)
+                        </label>
+                        <input type="number" id="mrp" name="mrp" value="399" step="1" min="0" placeholder="e.g. 399" style="font-size: 0.95rem;" oninput="calcDiscount()">
+                        <div id="discount_preview" style="margin-top: 0.25rem; font-size: 0.78rem; font-weight: 800; color: #16a34a;">
+                            <span style="background: #dcfce7; padding: 0.15rem 0.5rem; border-radius: 4px; display: inline-block;">
+                                63% OFF (Save ₹250)
+                            </span>
+                        </div>
                     </div>
 
                     <!-- Page Count -->
                     <div>
                         <label for="page_count" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.4rem;">
-                            Estimated Page Count
+                            Estimated Page Count <span style="color: #ef4444;">*</span>
                         </label>
                         <input type="number" id="page_count" name="page_count" value="45" min="1" required style="font-size: 0.95rem;">
+                        <small style="color: #64748b; font-size: 0.78rem;">Approx. total pages.</small>
                     </div>
                 </div>
 
@@ -135,7 +149,7 @@
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
                     <div style="margin-bottom: 0.75rem;">
                         <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 0;">
-                            <input type="checkbox" id="is_free" name="is_free" value="1" onchange="document.getElementById('price').value = this.checked ? 0 : 149;">
+                            <input type="checkbox" id="is_free" name="is_free" value="1" onchange="document.getElementById('price').value = this.checked ? 0 : 149; calcDiscount();">
                             <span style="font-weight: 700; color: #0f172a; font-size: 0.9rem;">
                                 <i class="fa-solid fa-gift" style="color: #10b981;"></i> 100% Freebie (Bypasses payment gateway, enables instant 1-click download)
                             </span>
@@ -285,6 +299,24 @@
 
     <script src="/js/image-compressor.js"></script>
     <script>
+        function calcDiscount() {
+            const price = parseFloat(document.getElementById('price').value) || 0;
+            const mrp = parseFloat(document.getElementById('mrp').value) || 0;
+            const preview = document.getElementById('discount_preview');
+            if (!preview) return;
+
+            if (mrp > price && price > 0) {
+                const diff = mrp - price;
+                const pct = Math.round((diff / mrp) * 100);
+                preview.innerHTML = `<span style="background: #dcfce7; color: #15803d; padding: 0.15rem 0.5rem; border-radius: 4px; display: inline-block;"><i class="fa-solid fa-tag"></i> ${pct}% OFF (Save ₹${diff.toLocaleString()})</span>`;
+            } else if (price === 0 && mrp > 0) {
+                preview.innerHTML = `<span style="background: #dcfce7; color: #15803d; padding: 0.15rem 0.5rem; border-radius: 4px; display: inline-block;"><i class="fa-solid fa-gift"></i> 100% FREE (Worth ₹${mrp.toLocaleString()})</span>`;
+            } else {
+                preview.innerHTML = `<span style="color: #94a3b8; font-size: 0.75rem;">Enter MRP higher than price to show discount</span>`;
+            }
+        }
+        calcDiscount();
+
         function previewSelectedFiles(input) {
             processAndCompressInput(input, 'filePreviewContainer', '#');
         }

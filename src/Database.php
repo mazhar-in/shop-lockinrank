@@ -113,6 +113,21 @@ class Database
         try { $pdo->exec("ALTER TABLE products ADD COLUMN sample_file_path TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
         try { $pdo->exec("ALTER TABLE products ADD COLUMN category_id INT DEFAULT NULL"); } catch (\Throwable $e) {}
         try { $pdo->exec("ALTER TABLE products ADD COLUMN tags TEXT DEFAULT NULL"); } catch (\Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE products ADD COLUMN mrp DECIMAL(10, 2) DEFAULT NULL"); } catch (\Throwable $e) {}
+
+        // Set realistic baseline MRP for existing products where MRP is not set yet
+        try {
+            $pdo->exec("
+                UPDATE products 
+                SET mrp = CASE 
+                    WHEN price >= 250 THEN 699.00
+                    WHEN price >= 150 THEN 499.00
+                    WHEN price > 0 THEN 299.00
+                    ELSE NULL 
+                END 
+                WHERE mrp IS NULL AND price > 0
+            ");
+        } catch (\Throwable $e) {}
 
         // Ensure columns in reviews exist
         try { $pdo->exec("ALTER TABLE reviews ADD COLUMN author_role VARCHAR(50) DEFAULT 'Verified Student'"); } catch (\Throwable $e) {}
@@ -217,6 +232,7 @@ class Database
                 slug TEXT UNIQUE NOT NULL,
                 description TEXT NOT NULL,
                 price REAL NOT NULL,
+                mrp REAL DEFAULT NULL,
                 is_free INTEGER DEFAULT 0,
                 grade TEXT NOT NULL,
                 board TEXT NOT NULL DEFAULT 'JEE / NTA Pattern',
