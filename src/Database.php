@@ -205,6 +205,31 @@ class Database
             $pdo->exec("UPDATE products SET tags = 'Olympiad, NSEP, INPhO, Non-Routine Problems, Advanced Physics' WHERE (tags IS NULL OR tags = '') AND title LIKE '%Olympiad%'");
             $pdo->exec("UPDATE products SET tags = 'Physics, Study Notes, Question Bank, Lockinrank' WHERE tags IS NULL OR tags = ''");
         } catch (\Throwable $e) {}
+
+        // Ensure admin_users table exists for persistent administrator authentication
+        try {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS admin_users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    admin_name TEXT DEFAULT 'Lockinrank Admin',
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
+        } catch (\Throwable $e) {
+            try {
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS `admin_users` (
+                        `id` INT AUTO_INCREMENT PRIMARY KEY,
+                        `username` VARCHAR(100) NOT NULL UNIQUE,
+                        `password_hash` VARCHAR(255) NOT NULL,
+                        `admin_name` VARCHAR(100) DEFAULT 'Lockinrank Admin',
+                        `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ");
+            } catch (\Throwable $e2) {}
+        }
     }
 
     private static function migrateAndSeed(PDO $db): void

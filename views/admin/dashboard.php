@@ -41,6 +41,30 @@
             </div>
         </div>
 
+        <!-- Default Password Security Warning Banner -->
+        <?php if (!empty($isDefaultPassword)): ?>
+            <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #f59e0b; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.08);">
+                <div style="display: flex; align-items: center; gap: 0.85rem;">
+                    <div style="width: 40px; height: 40px; border-radius: 8px; background: #f59e0b; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; font-size: 0.95rem; color: #92400e;">
+                            Action Recommended: Default Password in Use
+                        </div>
+                        <div style="font-size: 0.82rem; color: #b45309;">
+                            Your admin portal is currently using the factory default password (<code>admin123</code>). Change it now to secure your store.
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <a href="/admin/settings" role="button" style="background-color: #d97706; border-color: #d97706; color: #ffffff !important; font-weight: 700; font-size: 0.85rem; padding: 0.5rem 1.15rem; display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 6px; text-decoration: none; margin-bottom: 0;">
+                        <i class="fa-solid fa-key"></i> Change Password Now
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <!-- Metric Stat Cards in INR -->
         <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
             <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">

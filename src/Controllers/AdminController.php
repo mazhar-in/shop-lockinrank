@@ -73,11 +73,30 @@ class AdminController
 
         $config = self::getConfig();
         $validUser = $config['username'] ?? 'admin';
-        $hash = $config['password_hash'] ?? '';
+        $configHash = $config['password_hash'] ?? '';
+        $adminName = $config['admin_name'] ?? 'Lockinrank Admin';
 
         $isValid = false;
-        if ($username === $validUser) {
-            if (!empty($hash) && password_verify($password, $hash)) {
+
+        // 1. Check database admin_users table first
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT * FROM admin_users WHERE username = ? LIMIT 1");
+            $stmt->execute([$username]);
+            $dbUser = $stmt->fetch();
+            if ($dbUser && !empty($dbUser['password_hash'])) {
+                if (password_verify($password, $dbUser['password_hash'])) {
+                    $isValid = true;
+                    $adminName = $dbUser['admin_name'] ?? $adminName;
+                }
+            }
+        } catch (\Throwable $e) {
+            error_log("Admin DB auth lookup failed: " . $e->getMessage());
+        }
+
+        // 2. Fallback to config/admin.php if not validated by DB
+        if (!$isValid && $username === $validUser) {
+            if (!empty($configHash) && password_verify($password, $configHash)) {
                 $isValid = true;
             } elseif (isset($config['password']) && $config['password'] === $password) {
                 // Fallback if configured as plaintext
@@ -90,7 +109,7 @@ class AdminController
             $key = $config['session_key'] ?? 'lockinrank_admin_auth';
             $_SESSION[$key] = true;
             $_SESSION['admin_user'] = $username;
-            $_SESSION['admin_name'] = $config['admin_name'] ?? 'Lockinrank Admin';
+            $_SESSION['admin_name'] = $adminName;
             $_SESSION['admin_login_time'] = time();
 
             Flight::redirect('/admin');
@@ -99,6 +118,148 @@ class AdminController
 
         $_SESSION['admin_login_error'] = 'Invalid username or password.';
         Flight::redirect('/admin/login');
+    }
+
+    /**
+     * Check if administrator is still using the factory default password ('admin123')
+     */
+    public static function isDefaultPassword(): bool
+    {
+        try {
+            $db = Database::getConnection();
+            $currentUser = $_SESSION['admin_user'] ?? 'admin';
+            $stmt = $db->prepare("SELECT password_hash FROM admin_users WHERE username = ? LIMIT 1");
+            $stmt->execute([$currentUser]);
+            $user = $stmt->fetch();
+            if ($user && !empty($user['password_hash'])) {
+                return password_verify('admin123', $user['password_hash']);
+            }
+        } catch (\Throwable $e) {}
+
+        $config = self::getConfig();
+        $hash = $config['password_hash'] ?? '';
+        if (!empty($hash) && password_verify('admin123', $hash)) {
+            return true;
+        }
+        if (isset($config['password']) && $config['password'] === 'admin123') {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Render Admin Security & Settings page
+     */
+    public static function settings()
+    {
+        self::checkAuth();
+        $config = self::getConfig();
+        $isDefault = self::isDefaultPassword();
+
+        Flight::render('admin/settings', [
+            'username' => $_SESSION['admin_user'] ?? $config['username'] ?? 'admin',
+            'adminName' => $_SESSION['admin_name'] ?? $config['admin_name'] ?? 'Lockinrank Admin',
+            'isDefaultPassword' => $isDefault,
+            'pageTitle' => 'Admin Security & Password Settings — Lockinrank Control Panel'
+        ]);
+    }
+
+    /**
+     * Handle Password Change Form Submission
+     */
+    public static function updatePassword()
+    {
+        self::checkAuth();
+        $currentPassword = (string)(Flight::request()->data['current_password'] ?? '');
+        $newPassword = (string)(Flight::request()->data['new_password'] ?? '');
+        $confirmPassword = (string)(Flight::request()->data['confirm_password'] ?? '');
+        $adminName = trim(Flight::request()->data['admin_name'] ?? '');
+
+        $currentUser = $_SESSION['admin_user'] ?? 'admin';
+        $config = self::getConfig();
+
+        // 1. Fetch current hash to verify
+        $db = Database::getConnection();
+        $currentHash = null;
+
+        try {
+            $stmt = $db->prepare("SELECT password_hash FROM admin_users WHERE username = ? LIMIT 1");
+            $stmt->execute([$currentUser]);
+            $row = $stmt->fetch();
+            if ($row && !empty($row['password_hash'])) {
+                $currentHash = $row['password_hash'];
+            }
+        } catch (\Throwable $e) {}
+
+        if (!$currentHash) {
+            $currentHash = $config['password_hash'] ?? null;
+        }
+
+        // Verify current password
+        $isCurrentValid = false;
+        if (!empty($currentHash) && password_verify($currentPassword, $currentHash)) {
+            $isCurrentValid = true;
+        } elseif (isset($config['password']) && $config['password'] === $currentPassword) {
+            $isCurrentValid = true;
+        }
+
+        if (!$isCurrentValid) {
+            $_SESSION['admin_flash_error'] = 'Current password is incorrect. Please verify and try again.';
+            Flight::redirect('/admin/settings');
+            return;
+        }
+
+        // Validate new password
+        if (strlen($newPassword) < 6) {
+            $_SESSION['admin_flash_error'] = 'New password must be at least 6 characters long.';
+            Flight::redirect('/admin/settings');
+            return;
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            $_SESSION['admin_flash_error'] = 'New password and confirmation password do not match.';
+            Flight::redirect('/admin/settings');
+            return;
+        }
+
+        if ($newPassword === 'admin123') {
+            $_SESSION['admin_flash_error'] = 'Please choose a secure custom password other than the default "admin123".';
+            Flight::redirect('/admin/settings');
+            return;
+        }
+
+        $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
+        $displayName = !empty($adminName) ? $adminName : ($_SESSION['admin_name'] ?? 'Lockinrank Admin');
+
+        // 2. Update in Database
+        try {
+            $check = $db->prepare("SELECT id FROM admin_users WHERE username = ?");
+            $check->execute([$currentUser]);
+            if ($check->fetch()) {
+                $upd = $db->prepare("UPDATE admin_users SET password_hash = ?, admin_name = ?, updated_at = CURRENT_TIMESTAMP WHERE username = ?");
+                $upd->execute([$newHash, $displayName, $currentUser]);
+            } else {
+                $ins = $db->prepare("INSERT INTO admin_users (username, password_hash, admin_name) VALUES (?, ?, ?)");
+                $ins->execute([$currentUser, $newHash, $displayName]);
+            }
+        } catch (\Throwable $e) {
+            error_log("Failed to update admin password in DB: " . $e->getMessage());
+        }
+
+        // 3. Update config/admin.php if writable
+        try {
+            $configFile = __DIR__ . '/../../config/admin.php';
+            if (is_writable($configFile)) {
+                $content = "<?php\n\nreturn [\n    'username' => " . var_export($currentUser, true) . ",\n    'password_hash' => " . var_export($newHash, true) . ",\n    'session_key' => 'lockinrank_admin_auth',\n    'admin_name' => " . var_export($displayName, true) . ",\n    'session_timeout' => 86400 // 24 hours\n];\n";
+                @file_put_contents($configFile, $content);
+            }
+        } catch (\Throwable $e) {
+            error_log("Failed updating config/admin.php: " . $e->getMessage());
+        }
+
+        $_SESSION['admin_name'] = $displayName;
+        $_SESSION['admin_flash_success'] = 'Admin password has been changed successfully! Your account is now secured.';
+        Flight::redirect('/admin/settings');
     }
 
     public static function logout()
@@ -151,6 +312,7 @@ class AdminController
             'totalSampleDownloads' => $totalSampleDownloads,
             'totalCustomers' => $totalCustomers,
             'orderCount' => $orderCount,
+            'isDefaultPassword' => self::isDefaultPassword(),
             'pageTitle' => 'Admin Dashboard — Lockinrank Shop'
         ]);
     }

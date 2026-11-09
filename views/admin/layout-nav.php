@@ -17,9 +17,13 @@ $activeTab = $activeTab ?? 'dashboard';
             </div>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.85rem;">
             <a href="/" target="_blank" style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 0.4rem;">
                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Live Store
+            </a>
+            <span style="color: #334155;">|</span>
+            <a href="/admin/settings" style="color: #cbd5e1; font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; background: #1e293b; border: 1px solid #475569; padding: 0.3rem 0.65rem; border-radius: 6px;">
+                <i class="fa-solid fa-key" style="color: #fbbf24;"></i> Change Password
             </a>
             <span style="color: #334155;">|</span>
             <span style="color: #cbd5e1; font-size: 0.85rem; font-weight: 600;">
@@ -50,6 +54,9 @@ $activeTab = $activeTab ?? 'dashboard';
             </a>
             <a href="/admin/customers" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; border-radius: 6px; font-size: 0.9rem; font-weight: 700; text-decoration: none; transition: all 0.15s ease; <?= $activeTab === 'customers' ? 'background: #4f46e5; color: #ffffff !important;' : 'color: #94a3b8;' ?>">
                 <i class="fa-solid fa-users"></i> Customers
+            </a>
+            <a href="/admin/settings" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; border-radius: 6px; font-size: 0.9rem; font-weight: 700; text-decoration: none; transition: all 0.15s ease; <?= $activeTab === 'settings' ? 'background: #4f46e5; color: #ffffff !important;' : 'color: #94a3b8;' ?>">
+                <i class="fa-solid fa-shield-halved"></i> Settings
             </a>
         </nav>
 
