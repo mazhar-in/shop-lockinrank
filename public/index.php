@@ -65,6 +65,8 @@ Flight::route('GET /admin/product/edit/@id:[0-9]+', [AdminController::class, 'ed
 Flight::route('POST /admin/product/edit/@id:[0-9]+', [AdminController::class, 'updateProduct']);
 Flight::route('GET|POST /admin/product/delete/@id:[0-9]+', [AdminController::class, 'deleteProduct']);
 Flight::route('POST /admin/products/bulk-delete', [AdminController::class, 'bulkDeleteProducts']);
+Flight::route('POST /admin/products/import-json', [AdminController::class, 'importJson']);
+Flight::route('GET /admin/products/export-sample-json', [AdminController::class, 'exportSampleJson']);
 
 // --- Legacy Seller Routes Protection (Redirect to Admin Login) ---
 Flight::route('GET /seller', function() { Flight::redirect('/admin/login'); });

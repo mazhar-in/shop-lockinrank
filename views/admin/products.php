@@ -27,8 +27,11 @@
                     Manage course notes, problem sets, sample previews, and prices (<?= number_format($totalProducts) ?> total items)
                 </p>
             </div>
-            <div>
-                <a href="/admin/upload" role="button" style="background-color: #4f46e5; border-color: #4f46e5; color: #ffffff !important; font-weight: 700; font-size: 0.9rem; padding: 0.55rem 1.25rem; display: inline-flex; align-items: center; gap: 0.5rem; border-radius: 8px; text-decoration: none;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button type="button" onclick="openImportModal()" style="background-color: #059669; border-color: #059669; color: #ffffff !important; font-weight: 700; font-size: 0.9rem; padding: 0.55rem 1.15rem; display: inline-flex; align-items: center; gap: 0.5rem; border-radius: 8px; cursor: pointer; margin-bottom: 0;">
+                    <i class="fa-solid fa-file-arrow-up"></i> Import JSON
+                </button>
+                <a href="/admin/upload" role="button" style="background-color: #4f46e5; border-color: #4f46e5; color: #ffffff !important; font-weight: 700; font-size: 0.9rem; padding: 0.55rem 1.25rem; display: inline-flex; align-items: center; gap: 0.5rem; border-radius: 8px; text-decoration: none; margin-bottom: 0;">
                     <i class="fa-solid fa-plus"></i> Publish New Material
                 </a>
             </div>
@@ -315,6 +318,92 @@
 
     </main>
 
+    <!-- Modal for JSON Import -->
+    <dialog id="import-json-modal" style="border: none; border-radius: 12px; padding: 0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.08); max-width: 650px; width: 92%; margin: auto;">
+        <div style="background: #ffffff; border-radius: 12px; overflow: hidden;">
+            <!-- Modal Header -->
+            <div style="background: #0f172a; color: #ffffff; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div style="width: 32px; height: 32px; border-radius: 6px; background: #059669; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-file-import"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #ffffff;">Import Products from JSON</h3>
+                        <p style="margin: 0; font-size: 0.78rem; color: #94a3b8;">Upload single product or bulk product array</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeImportModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer; padding: 0.2rem 0.5rem; line-height: 1;">&times;</button>
+            </div>
+
+            <!-- Modal Body -->
+            <div style="padding: 1.5rem;">
+                <form method="POST" action="/admin/products/import-json" enctype="multipart/form-data" style="margin-bottom: 0;">
+                    
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: #334155; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <span>Need the expected JSON format?</span>
+                        <a href="/admin/products/export-sample-json" download="sample-products.json" style="color: #059669; font-weight: 700; text-decoration: underline; display: inline-flex; align-items: center; gap: 0.35rem;">
+                            <i class="fa-solid fa-download"></i> Download Sample JSON Template
+                        </a>
+                    </div>
+
+                    <!-- Option 1: File Upload -->
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="font-weight: 800; font-size: 0.9rem; color: #0f172a; margin-bottom: 0.4rem; display: block;">
+                            <i class="fa-solid fa-file-circle-plus" style="color: #059669;"></i> Upload JSON File (.json)
+                        </label>
+                        <input type="file" name="json_file" accept=".json,application/json" style="font-size: 0.88rem; margin-bottom: 0.25rem;">
+                        <small style="color: #64748b; font-size: 0.78rem;">Select a valid .json file from your computer.</small>
+                    </div>
+
+                    <div style="text-align: center; color: #94a3b8; font-weight: 700; font-size: 0.82rem; margin: 1rem 0; position: relative;">
+                        <span style="background: #ffffff; padding: 0 0.75rem; position: relative; z-index: 1;">OR PASTE JSON DIRECTLY</span>
+                        <hr style="position: absolute; top: 50%; left: 0; right: 0; margin: 0; border: none; border-top: 1px solid #e2e8f0; z-index: 0;">
+                    </div>
+
+                    <!-- Option 2: Paste JSON Content -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="font-weight: 800; font-size: 0.9rem; color: #0f172a; margin-bottom: 0.4rem; display: block;">
+                            <i class="fa-solid fa-code" style="color: #4f46e5;"></i> Raw JSON Text
+                        </label>
+                        <textarea name="json_content" rows="6" placeholder='[&#10;  {&#10;    "title": "51 DPPs for NEET Physics Class 11",&#10;    "description": "# Syllabus...",&#10;    "price": 299,&#10;    "mrp": 699,&#10;    "grade": "NEET (Medical)",&#10;    "subject": "Physics"&#10;  }&#10;]' style="font-family: monospace; font-size: 0.82rem; margin-bottom: 0.25rem;"></textarea>
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 1.25rem;">
+                        <button type="button" onclick="closeImportModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 0.5rem 1.1rem; font-size: 0.88rem; border-radius: 6px; cursor: pointer; margin-bottom: 0;">
+                            Cancel
+                        </button>
+                        <button type="submit" style="background: #059669; border-color: #059669; color: #ffffff; padding: 0.5rem 1.4rem; font-size: 0.88rem; font-weight: 700; border-radius: 6px; cursor: pointer; margin-bottom: 0; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i class="fa-solid fa-upload"></i> Import Products
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+    function openImportModal() {
+        const modal = document.getElementById('import-json-modal');
+        if (modal) {
+            if (typeof modal.showModal === 'function') {
+                modal.showModal();
+            } else {
+                modal.setAttribute('open', '');
+            }
+        }
+    }
+    function closeImportModal() {
+        const modal = document.getElementById('import-json-modal');
+        if (modal) {
+            if (typeof modal.close === 'function') {
+                modal.close();
+            } else {
+                modal.removeAttribute('open');
+            }
+        }
+    }
+    </script>
 </body>
 </html>
 

@@ -637,6 +637,234 @@ class AdminController
         Flight::redirect('/admin/products');
     }
 
+    /**
+     * Download a sample products.json template
+     */
+    public static function exportSampleJson()
+    {
+        self::checkAuth();
+        $sampleData = [
+            [
+                "title" => "51 Modular Practice DPPs for NEET Physics Class 11",
+                "description" => "# Comprehensive DPP Pack for NEET 2026/2027\n\nModular Daily Practice Problem sheets specifically structured for **Class 11 Physics** syllabus.\n\n### Key Highlights\n- **51 Chapterwise modules** covering Kinematics, Laws of Motion, Work Energy, and Gravitation\n- Ink-friendly monochrome design ready for high-speed printing\n- Detailed answer keys and step-by-step mathematical solutions included\n\n### Specifications\n| Feature | Details |\n| :--- | :--- |\n| Pages | 148 Pages |\n| Difficulty | Easy to NTA NEET Exam Level |\n| Format | High-resolution PDF |",
+                "price" => 299,
+                "mrp" => 699,
+                "is_free" => 0,
+                "grade" => "NEET (Medical)",
+                "board" => "NEET / NTA Pattern",
+                "subject" => "Physics",
+                "resource_type" => "Worksheet",
+                "file_format" => "PDF (Printable)",
+                "page_count" => 148,
+                "is_ink_friendly" => 1,
+                "standards" => "NCERT Class 11 & NTA NEET Pattern",
+                "tags" => "NEET, Physics, DPP, Class 11, Worksheets",
+                "thumbnail_url" => "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80",
+                "preview_images" => [
+                    "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80"
+                ]
+            ],
+            [
+                "title" => "Free Sample: Vectors & Kinematics Mastery Formula Sheet",
+                "description" => "## Free Quick Revision Formula Sheet\n\nEssential formulas, unit conversions, and vector cross/dot product shortcuts for **JEE Main & Advanced** aspirants.\n\n- Concise 2-page cheat sheet\n- Includes memory triggers & sign conventions\n- 100% Free digital download",
+                "price" => 0,
+                "mrp" => 99,
+                "is_free" => 1,
+                "grade" => "JEE Main & Advanced",
+                "board" => "JEE / NTA Pattern",
+                "subject" => "Physics",
+                "resource_type" => "Formula Sheet",
+                "file_format" => "PDF (Printable)",
+                "page_count" => 2,
+                "is_ink_friendly" => 1,
+                "standards" => "NCERT Class 11",
+                "tags" => "Free, Vectors, Kinematics, JEE Main, Formula Sheet",
+                "thumbnail_url" => "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&auto=format&fit=crop&q=80",
+                "preview_images" => [
+                    "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&auto=format&fit=crop&q=80"
+                ]
+            ]
+        ];
+
+        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Disposition: attachment; filename="sample-products.json"');
+        echo json_encode($sampleData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    /**
+     * Import products from uploaded JSON file or raw JSON text
+     */
+    public static function importJson()
+    {
+        self::checkAuth();
+        $db = Database::getConnection();
+
+        $jsonString = '';
+
+        if (!empty($_FILES['json_file']) && $_FILES['json_file']['error'] === UPLOAD_ERR_OK && $_FILES['json_file']['size'] > 0) {
+            $jsonString = file_get_contents($_FILES['json_file']['tmp_name']);
+        } elseif (!empty(Flight::request()->data['json_content'])) {
+            $jsonString = trim(Flight::request()->data['json_content']);
+        }
+
+        if (empty($jsonString)) {
+            $_SESSION['admin_flash_error'] = "Please choose a JSON file or paste JSON content to import.";
+            Flight::redirect('/admin/products');
+            return;
+        }
+
+        $decoded = json_decode($jsonString, true);
+        if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
+            $_SESSION['admin_flash_error'] = "Invalid JSON syntax: " . json_last_error_msg();
+            Flight::redirect('/admin/products');
+            return;
+        }
+
+        // Support single object or array of objects
+        $items = [];
+        if (isset($decoded['title'])) {
+            $items = [$decoded];
+        } elseif (is_array($decoded)) {
+            $items = $decoded;
+        }
+
+        if (empty($items)) {
+            $_SESSION['admin_flash_error'] = "No valid product entries found in the provided JSON.";
+            Flight::redirect('/admin/products');
+            return;
+        }
+
+        $store = $db->query("SELECT id FROM stores ORDER BY id ASC LIMIT 1")->fetch();
+        $storeId = $store['id'] ?? 1;
+
+        $categoriesMap = [];
+        $cats = $db->query("SELECT id, name FROM categories")->fetchAll();
+        foreach ($cats as $cat) {
+            $categoriesMap[strtolower(trim($cat['name']))] = (int)$cat['id'];
+        }
+
+        $importedCount = 0;
+        $errors = [];
+
+        $stmt = $db->prepare("
+            INSERT INTO products 
+            (store_id, title, slug, description, price, mrp, is_free, grade, board, subject, resource_type, file_format, page_count, is_ink_friendly, standards, thumbnail_url, preview_images, material_file_path, sample_file_path, category_id, tags, rating, review_count, sales_count, sample_downloads)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 5.0, 0, 0, 0)
+        ");
+
+        foreach ($items as $index => $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $title = trim($item['title'] ?? '');
+            if (empty($title)) {
+                $errors[] = "Item #" . ($index + 1) . " skipped: missing 'title'.";
+                continue;
+            }
+
+            $description = trim($item['description'] ?? '');
+            $price = (float)($item['price'] ?? 0);
+            $rawMrp = $item['mrp'] ?? null;
+            $mrp = ($rawMrp !== null && $rawMrp !== '') ? (float)$rawMrp : null;
+            $isFree = (!empty($item['is_free']) || $price == 0) ? 1 : 0;
+            if ($isFree) {
+                $price = 0.00;
+            }
+
+            $grade = trim($item['grade'] ?? 'JEE Main & Advanced');
+            $board = trim($item['board'] ?? 'JEE / NTA Pattern');
+            $subject = trim($item['subject'] ?? 'Physics');
+            $resourceType = trim($item['resource_type'] ?? 'Worksheet');
+            $fileFormat = trim($item['file_format'] ?? 'PDF (Printable)');
+            $pageCount = (int)($item['page_count'] ?? 10);
+            $isInkFriendly = isset($item['is_ink_friendly']) ? (int)$item['is_ink_friendly'] : 1;
+            $standards = trim($item['standards'] ?? '');
+            $tags = trim(strip_tags($item['tags'] ?? ''));
+
+            // Images
+            $thumbnail = trim($item['thumbnail_url'] ?? '');
+            $previewImagesList = [];
+            if (!empty($item['preview_images']) && is_array($item['preview_images'])) {
+                foreach ($item['preview_images'] as $img) {
+                    if (is_string($img) && filter_var(trim($img), FILTER_VALIDATE_URL)) {
+                        $previewImagesList[] = trim($img);
+                    }
+                }
+            }
+
+            if (!empty($thumbnail) && !in_array($thumbnail, $previewImagesList)) {
+                array_unshift($previewImagesList, $thumbnail);
+            }
+
+            if (empty($previewImagesList)) {
+                $previewImagesList = ['https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80'];
+            }
+
+            if (empty($thumbnail)) {
+                $thumbnail = $previewImagesList[0];
+            }
+
+            $previewImages = json_encode(array_values(array_unique($previewImagesList)));
+
+            $materialFilePath = !empty($item['material_file_path']) ? trim($item['material_file_path']) : null;
+            $sampleFilePath = !empty($item['sample_file_path']) ? trim($item['sample_file_path']) : null;
+
+            // Category resolution
+            $categoryId = null;
+            if (!empty($item['category_id'])) {
+                $categoryId = (int)$item['category_id'];
+            } elseif (!empty($item['category']) && isset($categoriesMap[strtolower(trim($item['category']))])) {
+                $categoryId = $categoriesMap[strtolower(trim($item['category']))];
+            }
+
+            $cleanTitle = preg_replace('/[^A-Za-z0-9-]+/', '-', $title);
+            $slug = strtolower(trim($cleanTitle, '-')) . '-' . rand(100, 999);
+
+            try {
+                $stmt->execute([
+                    $storeId,
+                    $title,
+                    $slug,
+                    $description,
+                    $price,
+                    $mrp,
+                    $isFree,
+                    $grade,
+                    $board,
+                    $subject,
+                    $resourceType,
+                    $fileFormat,
+                    $pageCount,
+                    $isInkFriendly,
+                    $standards,
+                    $thumbnail,
+                    $previewImages,
+                    $materialFilePath,
+                    $sampleFilePath,
+                    $categoryId,
+                    $tags
+                ]);
+                $importedCount++;
+            } catch (\Exception $e) {
+                $errors[] = "Error importing '{$title}': " . $e->getMessage();
+            }
+        }
+
+        if ($importedCount > 0) {
+            $msg = "Successfully imported {$importedCount} product" . ($importedCount > 1 ? 's' : '') . " from JSON.";
+            if (!empty($errors)) {
+                $msg .= " (" . count($errors) . " issue(s) reported)";
+            }
+            $_SESSION['admin_flash_success'] = $msg;
+        } else {
+            $_SESSION['admin_flash_error'] = "No products were imported. " . implode(" ", $errors);
+        }
+
+        Flight::redirect('/admin/products');
+    }
+
     public static function categories()
     {
         self::checkAuth();

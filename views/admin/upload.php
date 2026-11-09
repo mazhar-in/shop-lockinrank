@@ -34,6 +34,35 @@
 
             <form action="/admin/upload" method="POST" enctype="multipart/form-data" style="margin-bottom: 0;">
                 
+                <!-- JSON Auto-fill Card -->
+                <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1.5px dashed #10b981; border-radius: 10px; padding: 1.1rem 1.25rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                                <i class="fa-solid fa-file-code"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.92rem; color: #065f46;">
+                                    Auto-Fill Form from JSON File
+                                </div>
+                                <div style="font-size: 0.78rem; color: #047857;">
+                                    Select or drop a <code>.json</code> file to populate all title, price, tags, and description fields instantly.
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="file" id="jsonAutofillInput" accept=".json,application/json" style="display: none;" onchange="handleJsonAutofill(this)">
+                            <button type="button" onclick="document.getElementById('jsonAutofillInput').click()" style="background: #10b981; border-color: #059669; color: #ffffff; padding: 0.45rem 1rem; font-size: 0.85rem; font-weight: 700; border-radius: 6px; cursor: pointer; margin-bottom: 0; display: inline-flex; align-items: center; gap: 0.4rem;">
+                                <i class="fa-solid fa-folder-open"></i> Choose JSON File
+                            </button>
+                            <a href="/admin/products/export-sample-json" download="sample-product.json" style="font-size: 0.8rem; color: #065f46; text-decoration: underline; font-weight: 600; padding: 0.35rem 0.5rem;">
+                                Sample JSON
+                            </a>
+                        </div>
+                    </div>
+                    <div id="jsonAutofillStatus" style="display: none; margin-top: 0.6rem; font-size: 0.8rem; padding: 0.4rem 0.75rem; border-radius: 6px; background: #ffffff; border: 1px solid #a7f3d0; color: #065f46; font-weight: 600;"></div>
+                </div>
+
                 <!-- Title -->
                 <div style="margin-bottom: 1.5rem;">
                     <label for="title" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.4rem;">
@@ -273,12 +302,54 @@
                     </div>
                 </div>
 
-                <!-- Description -->
+                <!-- Description with Markdown Toolbar -->
                 <div style="margin-bottom: 2rem;">
-                    <label for="description" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.4rem;">
-                        Description & Key Highlights <span style="color: #ef4444;">*</span>
-                    </label>
-                    <textarea id="description" name="description" rows="5" placeholder="Detail the questions, difficulty levels, answer keys, and problem types included in this resource..." required style="font-size: 0.95rem;"></textarea>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <label for="description" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0;">
+                            Description & Key Highlights <span style="color: #ef4444;">*</span>
+                            <span style="font-size: 0.75rem; font-weight: 600; color: #4338ca; background: #e0e7ff; padding: 0.15rem 0.5rem; border-radius: 4px; margin-left: 0.4rem;">
+                                <i class="fa-brands fa-markdown"></i> Markdown Enabled
+                            </span>
+                        </label>
+                        <small style="color: #64748b; font-size: 0.78rem;">Supports **bold**, *italics*, tables, lists, links & headings</small>
+                    </div>
+
+                    <!-- Markdown Toolbar -->
+                    <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-bottom: none; border-radius: 6px 6px 0 0; padding: 0.4rem 0.6rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center;">
+                        <button type="button" onclick="insertMd('**', '**', 'bold text')" title="Bold" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-weight: 700;">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" onclick="insertMd('*', '*', 'italic text')" title="Italic" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-style: italic;">
+                            <em>I</em>
+                        </button>
+                        <span style="color: #cbd5e1; margin: 0 0.1rem;">|</span>
+                        <button type="button" onclick="insertMd('## ', '', 'Heading 2')" title="Heading 2" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-weight: 700;">
+                            H2
+                        </button>
+                        <button type="button" onclick="insertMd('### ', '', 'Heading 3')" title="Heading 3" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-weight: 700;">
+                            H3
+                        </button>
+                        <span style="color: #cbd5e1; margin: 0 0.1rem;">|</span>
+                        <button type="button" onclick="insertMd('- ', '', 'Bullet item')" title="Bullet List" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
+                            <i class="fa-solid fa-list-ul"></i>
+                        </button>
+                        <button type="button" onclick="insertMd('1. ', '', 'Numbered item')" title="Numbered List" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
+                            <i class="fa-solid fa-list-ol"></i>
+                        </button>
+                        <button type="button" onclick="insertMd('> ', '', 'Quoted note')" title="Blockquote" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
+                            <i class="fa-solid fa-quote-left"></i>
+                        </button>
+                        <button type="button" onclick="insertMd('[', '](https://example.com)', 'Link text')" title="Insert Link" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
+                            <i class="fa-solid fa-link"></i>
+                        </button>
+                        <button type="button" onclick="insertMd('`', '`', 'code')" title="Inline Code" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-family: monospace;">
+                            &lt;/&gt;
+                        </button>
+                        <button type="button" onclick="insertTableTemplate()" title="Insert Table" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
+                            <i class="fa-solid fa-table"></i> Table
+                        </button>
+                    </div>
+                    <textarea id="description" name="description" rows="7" placeholder="Detail the questions, difficulty levels, answer keys, and problem types included in this resource... (Markdown supported)" required style="font-size: 0.95rem; border-top-left-radius: 0; border-top-right-radius: 0;"></textarea>
                 </div>
 
                 <!-- Actions -->
@@ -299,6 +370,121 @@
 
     <script src="/js/image-compressor.js"></script>
     <script>
+        function insertMd(prefix, suffix, defaultText) {
+            const textarea = document.getElementById('description');
+            if (!textarea) return;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selected = text.substring(start, end) || defaultText;
+            const replacement = prefix + selected + suffix;
+            textarea.value = text.substring(0, start) + replacement + text.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+        }
+
+        function insertTableTemplate() {
+            const table = "\n| Feature | Specification |\n| :--- | :--- |\n| Pages | 50 Pages |\n| Difficulty | Moderate to High |\n| Answer Keys | Full Step-by-Step Solutions |\n";
+            const textarea = document.getElementById('description');
+            if (!textarea) return;
+            const start = textarea.selectionStart;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + table + text.substring(start);
+            textarea.focus();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function handleJsonAutofill(input) {
+            if (!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            const reader = new FileReader();
+            const statusBox = document.getElementById('jsonAutofillStatus');
+
+            reader.onload = function(e) {
+                try {
+                    let data = JSON.parse(e.target.result);
+                    if (Array.isArray(data) && data.length > 0) {
+                        data = data[0]; // take first item if array
+                    }
+                    if (!data || typeof data !== 'object') {
+                        throw new Error("Invalid product JSON object");
+                    }
+
+                    if (data.title) document.getElementById('title').value = data.title;
+                    if (data.price !== undefined) document.getElementById('price').value = data.price;
+                    if (data.mrp !== undefined && data.mrp !== null) document.getElementById('mrp').value = data.mrp;
+                    if (data.is_free !== undefined) {
+                        const freeCheck = document.getElementById('is_free');
+                        if (freeCheck) freeCheck.checked = Boolean(Number(data.is_free));
+                    }
+
+                    // Category select matching by id or name
+                    if (data.category_id) {
+                        const catSel = document.getElementById('category_id');
+                        if (catSel) catSel.value = data.category_id;
+                    } else if (data.category) {
+                        const catSel = document.getElementById('category_id');
+                        if (catSel) {
+                            for (let opt of catSel.options) {
+                                if (opt.text.toLowerCase().trim() === data.category.toLowerCase().trim()) {
+                                    catSel.value = opt.value;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Exam / Board / Subject / Resource details
+                    ['grade', 'board', 'subject', 'resource_type', 'file_format', 'page_count', 'standards', 'tags', 'description'].forEach(field => {
+                        const el = document.getElementById(field);
+                        if (el && data[field] !== undefined) {
+                            el.value = data[field];
+                        }
+                    });
+
+                    if (data.is_ink_friendly !== undefined) {
+                        const inkCheck = document.getElementById('is_ink_friendly');
+                        if (inkCheck) inkCheck.checked = Boolean(Number(data.is_ink_friendly));
+                    }
+
+                    // Preview URLs
+                    if (data.preview_images && Array.isArray(data.preview_images)) {
+                        const urlsEl = document.getElementById('preview_urls');
+                        if (urlsEl) urlsEl.value = data.preview_images.join("\n");
+                    }
+
+                    // Thumbnail URL
+                    if (data.thumbnail_url) {
+                        const thumbEl = document.getElementById('thumbnail_url');
+                        if (thumbEl) thumbEl.value = data.thumbnail_url;
+                    }
+
+                    calcDiscount();
+
+                    if (statusBox) {
+                        statusBox.style.display = 'block';
+                        statusBox.style.color = '#065f46';
+                        statusBox.style.background = '#d1fae5';
+                        statusBox.style.borderColor = '#6ee7b7';
+                        statusBox.innerHTML = '<i class="fa-solid fa-check-circle"></i> Successfully loaded data from <strong>' + escapeHtml(file.name) + '</strong> (' + (data.title ? escapeHtml(data.title) : 'Product') + ')';
+                    }
+                } catch (err) {
+                    if (statusBox) {
+                        statusBox.style.display = 'block';
+                        statusBox.style.color = '#991b1b';
+                        statusBox.style.background = '#fee2e2';
+                        statusBox.style.borderColor = '#fca5a5';
+                        statusBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error parsing JSON: ' + escapeHtml(err.message);
+                    }
+                }
+            };
+            reader.readAsText(file);
+        }
+
         function calcDiscount() {
             const price = parseFloat(document.getElementById('price').value) || 0;
             const mrp = parseFloat(document.getElementById('mrp').value) || 0;

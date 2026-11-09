@@ -465,7 +465,9 @@ $breadcrumbSchema = [
         About this Teaching Material
     </h3>
     <div style="background-color: var(--pico-card-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: 8px; padding: 1.5rem; line-height: 1.7;">
-        <p><?= nl2br(htmlspecialchars($product['description'])) ?></p>
+        <div class="markdown-content">
+            <?= \App\Services\MarkdownParser::render($product['description'] ?? '') ?>
+        </div>
         
         <h5 style="margin-top: 1.5rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-check" style="color: var(--tpt-green);"></i> What is Included in this Pack:</h5>
         <ul>

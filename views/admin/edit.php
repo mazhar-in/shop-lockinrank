@@ -351,12 +351,54 @@
                     </div>
                 </div>
 
-                <!-- Description -->
+                <!-- Description with Markdown Toolbar -->
                 <div style="margin-bottom: 2rem;">
-                    <label for="description" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.4rem;">
-                        Description & Highlights <span style="color: #ef4444;">*</span>
-                    </label>
-                    <textarea id="description" name="description" rows="5" required style="font-size: 0.95rem;"><?= htmlspecialchars($product['description']) ?></textarea>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <label for="description" style="font-weight: 800; font-size: 0.9rem; color: #1e293b; margin-bottom: 0;">
+                            Description & Highlights <span style="color: #ef4444;">*</span>
+                            <span style="font-size: 0.75rem; font-weight: 600; color: #4338ca; background: #e0e7ff; padding: 0.15rem 0.5rem; border-radius: 4px; margin-left: 0.4rem;">
+                                <i class="fa-brands fa-markdown"></i> Markdown Enabled
+                            </span>
+                        </label>
+                        <small style="color: #64748b; font-size: 0.78rem;">Supports **bold**, *italics*, tables, lists, links & headings</small>
+                    </div>
+
+                    <!-- Markdown Toolbar -->
+                    <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-bottom: none; border-radius: 6px 6px 0 0; padding: 0.4rem 0.6rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center;">
+                        <button type="button" onclick="insertMd('**', '**', 'bold text')" title="Bold" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-weight: 700;">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" onclick="insertMd('*', '*', 'italic text')" title="Italic" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-style: italic;">
+                            <em>I</em>
+                        </button>
+                        <span style="color: #cbd5e1; margin: 0 0.1rem;">|</span>
+                        <button type="button" onclick="insertMd('## ', '', 'Heading 2')" title="Heading 2" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-weight: 700;">
+                            H2
+                        </button>
+                        <button type="button" onclick="insertMd('### ', '', 'Heading 3')" title="Heading 3" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-weight: 700;">
+                            H3
+                        </button>
+                        <span style="color: #cbd5e1; margin: 0 0.1rem;">|</span>
+                        <button type="button" onclick="insertMd('- ', '', 'Bullet item')" title="Bullet List" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
+                            <i class="fa-solid fa-list-ul"></i>
+                        </button>
+                        <button type="button" onclick="insertMd('1. ', '', 'Numbered item')" title="Numbered List" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
+                            <i class="fa-solid fa-list-ol"></i>
+                        </button>
+                        <button type="button" onclick="insertMd('> ', '', 'Quoted note')" title="Blockquote" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
+                            <i class="fa-solid fa-quote-left"></i>
+                        </button>
+                        <button type="button" onclick="insertMd('[', '](https://example.com)', 'Link text')" title="Insert Link" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
+                            <i class="fa-solid fa-link"></i>
+                        </button>
+                        <button type="button" onclick="insertMd('`', '`', 'code')" title="Inline Code" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0; font-family: monospace;">
+                            &lt;/&gt;
+                        </button>
+                        <button type="button" onclick="insertTableTemplate()" title="Insert Table" style="background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 0.25rem 0.55rem; font-size: 0.82rem; border-radius: 4px; cursor: pointer; margin-bottom: 0;">
+                            <i class="fa-solid fa-table"></i> Table
+                        </button>
+                    </div>
+                    <textarea id="description" name="description" rows="7" required style="font-size: 0.95rem; border-top-left-radius: 0; border-top-right-radius: 0;"><?= htmlspecialchars($product['description']) ?></textarea>
                 </div>
 
                 <!-- Actions -->
@@ -377,6 +419,29 @@
 
     <script src="/js/image-compressor.js"></script>
     <script>
+        function insertMd(prefix, suffix, defaultText) {
+            const textarea = document.getElementById('description');
+            if (!textarea) return;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selected = text.substring(start, end) || defaultText;
+            const replacement = prefix + selected + suffix;
+            textarea.value = text.substring(0, start) + replacement + text.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+        }
+
+        function insertTableTemplate() {
+            const table = "\n| Feature | Specification |\n| :--- | :--- |\n| Pages | 50 Pages |\n| Difficulty | Moderate to High |\n| Answer Keys | Full Step-by-Step Solutions |\n";
+            const textarea = document.getElementById('description');
+            if (!textarea) return;
+            const start = textarea.selectionStart;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + table + text.substring(start);
+            textarea.focus();
+        }
+
         function calcDiscount() {
             const price = parseFloat(document.getElementById('price').value) || 0;
             const mrp = parseFloat(document.getElementById('mrp').value) || 0;
