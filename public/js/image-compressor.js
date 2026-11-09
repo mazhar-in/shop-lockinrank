@@ -119,6 +119,17 @@ async function processAndCompressInput(input, containerId, badgePrefix = '#') {
     `;
 
     const rawFiles = Array.from(input.files);
+    // If any image has 'cover' in its name, prioritize it as the first image (cover thumbnail)
+    rawFiles.sort((a, b) => {
+        const aName = (a.name || '').toLowerCase();
+        const bName = (b.name || '').toLowerCase();
+        const aCover = aName.includes('cover');
+        const bCover = bName.includes('cover');
+        if (aCover && !bCover) return -1;
+        if (!aCover && bCover) return 1;
+        return 0;
+    });
+
     const compressedFiles = [];
 
     let totalOriginal = 0;
@@ -175,12 +186,14 @@ async function processAndCompressInput(input, containerId, badgePrefix = '#') {
         item.style.cssText = 'position: relative; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.06);';
 
         const imgUrl = URL.createObjectURL(file);
-        const badgeLabel = (badgePrefix === '#' ? (index === 0 ? 'Cover' : '#' + (index + 1)) : badgePrefix + ' ' + (index + 1));
+        const isCover = (file.name || '').toLowerCase().includes('cover') || index === 0;
+        const badgeLabel = isCover ? '<i class="fa-solid fa-star"></i> Cover' : (badgePrefix === '#' ? '#' + (index + 1) : badgePrefix + ' ' + (index + 1));
+        const badgeBg = isCover ? 'background: #059669;' : 'background: rgba(15, 23, 42, 0.85);';
         const savingsText = file._savingsPercent > 0 ? `-${file._savingsPercent}%` : 'Optimized';
 
         item.innerHTML = `
             <img src="${imgUrl}" alt="Preview" style="width: 100%; height: 110px; object-fit: cover; display: block;">
-            <div style="position: absolute; top: 4px; left: 4px; background: rgba(15, 23, 42, 0.85); color: #ffffff; font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px;">
+            <div style="position: absolute; top: 4px; left: 4px; ${badgeBg} color: #ffffff; font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.25rem;">
                 ${badgeLabel}
             </div>
             <div style="position: absolute; bottom: 4px; left: 4px; right: 4px; background: rgba(16, 185, 129, 0.9); color: #ffffff; font-size: 0.65rem; font-weight: 800; padding: 0.15rem 0.35rem; border-radius: 4px; text-align: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">

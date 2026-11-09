@@ -334,9 +334,12 @@
                         <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">
                             Click to Upload More Images (Multiple Selection)
                         </div>
-                        <small style="color: #64748b; font-size: 0.78rem;">
+                        <small style="color: #64748b; font-size: 0.78rem; display: block;">
                             <i class="fa-solid fa-bolt" style="color: #10b981;"></i> Auto-compressed &amp; optimized on upload. PNG, JPG, WEBP, GIF, SVG. Select multiple files at once.
                         </small>
+                        <div style="font-size: 0.78rem; color: #4338ca; margin-top: 0.4rem; font-weight: 700;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Tip: Any file named with <code>cover</code> (e.g. <code>cover.jpg</code> or <code>notes_cover.png</code>) is automatically detected and set as the 1st primary cover!
+                        </div>
                     </div>
 
                     <!-- New Files Preview Grid with Compression Stats -->

@@ -205,6 +205,7 @@ class AdminController
     /**
      * Helper to process multiple uploaded images from $_FILES['images']
      * Automatically compresses, downscales heavy images, converts to WebP/JPEG, and saves to /public/uploads/products/
+     * If any image filename contains 'cover' (case-insensitive), it is prioritized as the first image.
      */
     private static function handleUploadedImages(): array
     {
@@ -220,6 +221,9 @@ class AdminController
             $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
 
             $fileCount = count($files['name']);
+            $coverImages = [];
+            $otherImages = [];
+
             for ($i = 0; $i < $fileCount; $i++) {
                 if ($files['error'][$i] === UPLOAD_ERR_OK && $files['size'][$i] > 0) {
                     $originalName = $files['name'][$i];
@@ -234,14 +238,49 @@ class AdminController
                         // Compress & convert to optimized WebP/JPEG using ImageOptimizer
                         $storedUrl = ImageOptimizer::compressAndStore($tmpName, $originalName, $uploadDir);
                         if ($storedUrl) {
-                            $uploaded[] = $storedUrl;
+                            if (stripos($originalName, 'cover') !== false) {
+                                $coverImages[] = $storedUrl;
+                            } else {
+                                $otherImages[] = $storedUrl;
+                            }
                         }
                     }
                 }
             }
+
+            // Put images with 'cover' in filename first
+            $uploaded = array_merge($coverImages, $otherImages);
         }
 
         return $uploaded;
+    }
+
+    /**
+     * Reorders an array of image paths/URLs so that any image with 'cover'
+     * in its file name or URL is placed at index 0 (as primary cover).
+     */
+    public static function prioritizeCoverImage(array $images): array
+    {
+        if (empty($images)) {
+            return [];
+        }
+
+        $covers = [];
+        $others = [];
+
+        foreach ($images as $img) {
+            $imgStr = is_string($img) ? trim($img) : '';
+            if (empty($imgStr)) continue;
+            $path = parse_url($imgStr, PHP_URL_PATH) ?? $imgStr;
+            $name = basename($path);
+            if (stripos($name, 'cover') !== false || stripos($imgStr, 'cover') !== false) {
+                $covers[] = $imgStr;
+            } else {
+                $others[] = $imgStr;
+            }
+        }
+
+        return array_values(array_unique(array_merge($covers, $others)));
     }
 
     /**
@@ -325,8 +364,8 @@ class AdminController
             }
         }
 
-        // Combine all images (uploads first, then URLs)
-        $allImages = array_values(array_unique(array_merge($uploadedImages, $urlList)));
+        // Combine all images (uploads first, then URLs) and prioritize image with 'cover'
+        $allImages = self::prioritizeCoverImage(array_merge($uploadedImages, $urlList));
 
         if (empty($allImages)) {
             $allImages = ['https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80'];
@@ -474,15 +513,18 @@ class AdminController
             }
         }
 
-        $allImages = array_values(array_unique(array_merge($keptImages, $newUploaded, $newUrls)));
+        $allImages = self::prioritizeCoverImage(array_merge($keptImages, $newUploaded, $newUrls));
 
         if (empty($allImages)) {
             $allImages = [$existing['thumbnail_url'] ?: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80'];
         }
 
-        // Allow explicitly picking primary thumbnail index
+        // If an image with 'cover' in its name is found, make it the cover thumbnail
+        $hasCoverImage = !empty($allImages) && (stripos(basename(parse_url($allImages[0], PHP_URL_PATH) ?? $allImages[0]), 'cover') !== false || stripos($allImages[0], 'cover') !== false);
         $primaryIndex = (int)(Flight::request()->data['primary_image_index'] ?? 0);
-        if (isset($allImages[$primaryIndex])) {
+        if ($hasCoverImage) {
+            $thumbnail = $allImages[0];
+        } elseif (isset($allImages[$primaryIndex])) {
             $thumbnail = $allImages[$primaryIndex];
         } else {
             $thumbnail = $allImages[0];
@@ -795,18 +837,18 @@ class AdminController
             }
 
             if (!empty($thumbnail) && !in_array($thumbnail, $previewImagesList)) {
-                array_unshift($previewImagesList, $thumbnail);
+                $previewImagesList[] = $thumbnail;
             }
+
+            // Prioritize image containing 'cover' as the first image and cover thumbnail
+            $previewImagesList = self::prioritizeCoverImage($previewImagesList);
 
             if (empty($previewImagesList)) {
                 $previewImagesList = ['https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80'];
             }
 
-            if (empty($thumbnail)) {
-                $thumbnail = $previewImagesList[0];
-            }
-
-            $previewImages = json_encode(array_values(array_unique($previewImagesList)));
+            $thumbnail = $previewImagesList[0];
+            $previewImages = json_encode($previewImagesList);
 
             $materialFilePath = !empty($item['material_file_path']) ? trim($item['material_file_path']) : null;
             $sampleFilePath = !empty($item['sample_file_path']) ? trim($item['sample_file_path']) : null;

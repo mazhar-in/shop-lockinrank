@@ -44,10 +44,12 @@ class ImageOptimizer
         }
 
         $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $isCover = (stripos($originalName, 'cover') !== false);
+        $prefix = $isCover ? 'prod_cover_' : 'prod_';
 
         // SVG files are vector XML; do not rasterize, store as clean SVG
         if ($ext === 'svg') {
-            $safeName = 'prod_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.svg';
+            $safeName = $prefix . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.svg';
             $dest = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
             if (move_uploaded_file($tmpPath, $dest) || copy($tmpPath, $dest)) {
                 return '/uploads/products/' . $safeName;
@@ -58,7 +60,7 @@ class ImageOptimizer
         // Check if GD extension is available
         if (!extension_loaded('gd')) {
             // Fallback: store original file safely
-            $safeName = 'prod_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+            $safeName = $prefix . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
             $dest = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
             if (move_uploaded_file($tmpPath, $dest) || copy($tmpPath, $dest)) {
                 return '/uploads/products/' . $safeName;
@@ -71,7 +73,7 @@ class ImageOptimizer
             $srcImage = self::createImageFromFile($tmpPath, $ext);
             if (!$srcImage) {
                 // Could not decode with GD; fallback to direct move
-                $safeName = 'prod_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                $safeName = $prefix . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
                 $dest = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
                 if (move_uploaded_file($tmpPath, $dest) || copy($tmpPath, $dest)) {
                     return '/uploads/products/' . $safeName;
@@ -102,7 +104,7 @@ class ImageOptimizer
 
             // Determine optimal format and save
             $canWebP = function_exists('imagewebp');
-            $safeBase = 'prod_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4));
+            $safeBase = $prefix . date('Ymd_His') . '_' . bin2hex(random_bytes(4));
 
             if ($canWebP) {
                 $safeName = $safeBase . '.webp';
@@ -127,7 +129,7 @@ class ImageOptimizer
         }
 
         // Final safety fallback
-        $safeName = 'prod_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+        $safeName = $prefix . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $dest = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
         if (move_uploaded_file($tmpPath, $dest) || copy($tmpPath, $dest)) {
             return '/uploads/products/' . $safeName;

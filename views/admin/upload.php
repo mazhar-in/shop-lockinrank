@@ -278,9 +278,12 @@
                         <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">
                             Click to Browse or Drag & Drop Multiple Images
                         </div>
-                        <small style="color: #64748b; font-size: 0.78rem;">
+                        <small style="color: #64748b; font-size: 0.78rem; display: block;">
                             <i class="fa-solid fa-bolt" style="color: #10b981;"></i> Auto-compressed &amp; optimized on upload. PNG, JPG, WEBP, GIF, or SVG. Select multiple files at once.
                         </small>
+                        <div style="font-size: 0.78rem; color: #4338ca; margin-top: 0.4rem; font-weight: 700;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Tip: Any file named with <code>cover</code> (e.g. <code>cover.jpg</code> or <code>physics_cover.png</code>) is automatically detected and set as the 1st primary cover!
+                        </div>
                     </div>
 
                     <!-- Client-side Preview of Chosen Files with Compression Stats -->
@@ -451,10 +454,25 @@
                         if (inkCheck) inkCheck.checked = Boolean(Number(data.is_ink_friendly));
                     }
 
-                    // Preview URLs
+                    // Preview URLs & Cover Image prioritization
                     if (data.preview_images && Array.isArray(data.preview_images)) {
+                        // Prioritize image with 'cover' in its URL or filename to index 0
+                        data.preview_images.sort((a, b) => {
+                            const aCover = String(a).toLowerCase().includes('cover');
+                            const bCover = String(b).toLowerCase().includes('cover');
+                            if (aCover && !bCover) return -1;
+                            if (!aCover && bCover) return 1;
+                            return 0;
+                        });
+
                         const urlsEl = document.getElementById('preview_urls');
                         if (urlsEl) urlsEl.value = data.preview_images.join("\n");
+
+                        // If cover image exists or thumbnail not explicitly given, use first image
+                        if (!data.thumbnail_url && data.preview_images[0]) {
+                            const thumbEl = document.getElementById('thumbnail_url');
+                            if (thumbEl) thumbEl.value = data.preview_images[0];
+                        }
                     }
 
                     // Thumbnail URL
