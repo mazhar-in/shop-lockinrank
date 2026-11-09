@@ -46,7 +46,7 @@
                                     Auto-Fill Form from JSON File
                                 </div>
                                 <div style="font-size: 0.78rem; color: #047857;">
-                                    Select or drop a <code>.json</code> file to populate all title, price, tags, and description fields instantly.
+                                    Select or drop a <code>.json</code> file to populate title, price, tags, Description &amp; Key Highlights instantly.
                                 </div>
                             </div>
                         </div>
@@ -442,12 +442,35 @@
                     }
 
                     // Exam / Board / Subject / Resource details
-                    ['grade', 'board', 'subject', 'resource_type', 'file_format', 'page_count', 'standards', 'tags', 'description'].forEach(field => {
+                    ['grade', 'board', 'subject', 'resource_type', 'file_format', 'page_count', 'standards', 'tags'].forEach(field => {
                         const el = document.getElementById(field);
                         if (el && data[field] !== undefined) {
                             el.value = data[field];
                         }
                     });
+
+                    // Description & Key Highlights
+                    let desc = data.description || data.description_and_key_highlights || '';
+                    const rawHighlights = data.key_highlights || data.highlights || data.what_is_included;
+                    if (rawHighlights) {
+                        let hlText = '';
+                        if (Array.isArray(rawHighlights)) {
+                            const bullets = rawHighlights.map(h => "- " + String(h).replace(/^[-*\s]+/, '')).filter(Boolean);
+                            if (bullets.length > 0) {
+                                hlText = "### Key Highlights & What's Included:\n\n" + bullets.join("\n");
+                            }
+                        } else if (typeof rawHighlights === 'string' && rawHighlights.trim()) {
+                            const trimmedHl = rawHighlights.trim();
+                            hlText = trimmedHl.startsWith('#') ? trimmedHl : ("### Key Highlights & What's Included:\n\n" + trimmedHl);
+                        }
+                        if (hlText && !desc.includes(hlText)) {
+                            desc = desc ? (desc.trim() + "\n\n" + hlText) : hlText;
+                        }
+                    }
+                    if (desc) {
+                        const descEl = document.getElementById('description');
+                        if (descEl) descEl.value = desc;
+                    }
 
                     if (data.is_ink_friendly !== undefined) {
                         const inkCheck = document.getElementById('is_ink_friendly');

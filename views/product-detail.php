@@ -469,6 +469,11 @@ $breadcrumbSchema = [
             <?= \App\Services\MarkdownParser::render($product['description'] ?? '') ?>
         </div>
         
+        <?php 
+        $descLower = strtolower($product['description'] ?? '');
+        $hasCustomHighlights = str_contains($descLower, 'highlight') || str_contains($descLower, 'included');
+        if (!$hasCustomHighlights): 
+        ?>
         <h5 style="margin-top: 1.5rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-check" style="color: var(--tpt-green);"></i> What is Included in this Pack:</h5>
         <ul>
             <li>Step-by-step student practice sheets with clean NCERT-pattern exercises</li>
@@ -476,6 +481,7 @@ $breadcrumbSchema = [
             <li>High-contrast ink-friendly layout designed for monochrome printer toner saving</li>
             <li>Single-classroom or home-school license rights for unlimited printouts</li>
         </ul>
+        <?php endif; ?>
     </div>
 </div>
 

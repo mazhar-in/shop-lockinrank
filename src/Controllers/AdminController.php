@@ -842,7 +842,7 @@ class AdminController
     }
 
     /**
-     * Download a sample products.json template
+     * Download a sample products.json template containing all product properties and entries
      */
     public static function exportSampleJson()
     {
@@ -850,43 +850,63 @@ class AdminController
         $sampleData = [
             [
                 "title" => "51 Modular Practice DPPs for NEET Physics Class 11",
-                "description" => "# Comprehensive DPP Pack for NEET 2026/2027\n\nModular Daily Practice Problem sheets specifically structured for **Class 11 Physics** syllabus.\n\n### Key Highlights\n- **51 Chapterwise modules** covering Kinematics, Laws of Motion, Work Energy, and Gravitation\n- Ink-friendly monochrome design ready for high-speed printing\n- Detailed answer keys and step-by-step mathematical solutions included\n\n### Specifications\n| Feature | Details |\n| :--- | :--- |\n| Pages | 148 Pages |\n| Difficulty | Easy to NTA NEET Exam Level |\n| Format | High-resolution PDF |",
-                "price" => 299,
-                "mrp" => 699,
-                "is_free" => 0,
+                "category" => "NEET (Medical)",
+                "category_id" => 2,
                 "grade" => "NEET (Medical)",
                 "board" => "NEET / NTA Pattern",
                 "subject" => "Physics",
                 "resource_type" => "Worksheet",
                 "file_format" => "PDF (Printable)",
                 "page_count" => 148,
+                "price" => 299,
+                "mrp" => 699,
+                "is_free" => 0,
                 "is_ink_friendly" => 1,
-                "standards" => "NCERT Class 11 & NTA NEET Pattern",
-                "tags" => "NEET, Physics, DPP, Class 11, Worksheets",
+                "standards" => "NCERT Class 11 Units 1-6 & NTA NEET Pattern",
+                "tags" => "NEET, Physics, DPP, Class 11, Worksheets, NCERT",
+                "description" => "Comprehensive daily practice problem set structured specifically for NEET medical entrance. Covers Kinematics, Laws of Motion, Work Power Energy, Gravitation, and Thermodynamics with exam-calibrated question sheets.",
+                "key_highlights" => [
+                    "51 Modular Chapterwise sheets with 500+ exam-grade practice questions",
+                    "Teacher answer keys with full calculation workings and hints included",
+                    "High-contrast ink-friendly layout optimized for monochrome printer toner saving",
+                    "Single-classroom or personal study license rights for unlimited printouts"
+                ],
                 "thumbnail_url" => "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80",
                 "preview_images" => [
-                    "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80"
-                ]
+                    "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80",
+                    "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&auto=format&fit=crop&q=80"
+                ],
+                "material_file_path" => "materials/51_neet_dpps_full.pdf",
+                "sample_file_path" => "samples/neet_dpp_sample.pdf"
             ],
             [
                 "title" => "Free Sample: Vectors & Kinematics Mastery Formula Sheet",
-                "description" => "## Free Quick Revision Formula Sheet\n\nEssential formulas, unit conversions, and vector cross/dot product shortcuts for **JEE Main & Advanced** aspirants.\n\n- Concise 2-page cheat sheet\n- Includes memory triggers & sign conventions\n- 100% Free digital download",
-                "price" => 0,
-                "mrp" => 99,
-                "is_free" => 1,
+                "category" => "JEE Main & Advanced",
+                "category_id" => 1,
                 "grade" => "JEE Main & Advanced",
                 "board" => "JEE / NTA Pattern",
                 "subject" => "Physics",
                 "resource_type" => "Formula Sheet",
                 "file_format" => "PDF (Printable)",
                 "page_count" => 2,
+                "price" => 0,
+                "mrp" => 99,
+                "is_free" => 1,
                 "is_ink_friendly" => 1,
-                "standards" => "NCERT Class 11",
+                "standards" => "NCERT Class 11 Physics Units 1-2",
                 "tags" => "Free, Vectors, Kinematics, JEE Main, Formula Sheet",
+                "description" => "Essential formulas, unit conversions, and vector cross/dot product shortcuts for JEE Main & Advanced aspirants. Ideal for rapid final revision before exams.",
+                "key_highlights" => [
+                    "Concise 2-page rapid revision cheat sheet",
+                    "Includes memory triggers, sign conventions & coordinate tricks",
+                    "Instant 100% Free digital download"
+                ],
                 "thumbnail_url" => "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&auto=format&fit=crop&q=80",
                 "preview_images" => [
                     "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&auto=format&fit=crop&q=80"
-                ]
+                ],
+                "material_file_path" => null,
+                "sample_file_path" => "samples/vectors_kinematics_free_cheatsheet.pdf"
             ]
         ];
 
@@ -968,7 +988,31 @@ class AdminController
                 continue;
             }
 
-            $description = trim($item['description'] ?? '');
+            // Support 'description' and/or 'description_and_key_highlights'
+            $description = trim($item['description'] ?? $item['description_and_key_highlights'] ?? '');
+
+            // Process 'key_highlights' or 'highlights' or 'what_is_included'
+            $rawHighlights = $item['key_highlights'] ?? $item['highlights'] ?? $item['what_is_included'] ?? null;
+            $highlightsText = '';
+            if (is_array($rawHighlights) && !empty($rawHighlights)) {
+                $bulletItems = [];
+                foreach ($rawHighlights as $h) {
+                    $trimmed = trim((string)$h);
+                    if (!empty($trimmed)) {
+                        $bulletItems[] = "- " . ltrim($trimmed, "-* \t");
+                    }
+                }
+                if (!empty($bulletItems)) {
+                    $highlightsText = "### Key Highlights & What's Included:\n\n" . implode("\n", $bulletItems);
+                }
+            } elseif (is_string($rawHighlights) && !empty(trim($rawHighlights))) {
+                $trimmedHl = trim($rawHighlights);
+                $highlightsText = str_starts_with($trimmedHl, '#') ? $trimmedHl : ("### Key Highlights & What's Included:\n\n" . $trimmedHl);
+            }
+
+            if (!empty($highlightsText) && !str_contains($description, $highlightsText)) {
+                $description = !empty($description) ? (rtrim($description) . "\n\n" . $highlightsText) : $highlightsText;
+            }
             $price = (float)($item['price'] ?? 0);
             $rawMrp = $item['mrp'] ?? null;
             $mrp = ($rawMrp !== null && $rawMrp !== '') ? (float)$rawMrp : null;

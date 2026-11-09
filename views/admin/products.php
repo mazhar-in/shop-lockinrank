@@ -340,9 +340,14 @@
                 <form method="POST" action="/admin/products/import-json" enctype="multipart/form-data" style="margin-bottom: 0;">
                     
                     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: #334155; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                        <span>Need the expected JSON format?</span>
-                        <a href="/admin/products/export-sample-json" download="sample-products.json" style="color: #059669; font-weight: 700; text-decoration: underline; display: inline-flex; align-items: center; gap: 0.35rem;">
-                            <i class="fa-solid fa-download"></i> Download Sample JSON Template
+                        <div>
+                            <strong>Full Product JSON Specification:</strong>
+                            <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">
+                                Supports <code>title</code>, <code>category</code>, <code>grade</code>, <code>board</code>, <code>subject</code>, <code>price</code>, <code>mrp</code>, <code>description</code>, <code>key_highlights</code>, <code>tags</code>, <code>thumbnail_url</code>, etc.
+                            </div>
+                        </div>
+                        <a href="/admin/products/export-sample-json" download="sample-products.json" style="color: #059669; font-weight: 700; text-decoration: underline; display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem;">
+                            <i class="fa-solid fa-download"></i> Download Full Sample JSON
                         </a>
                     </div>
 
