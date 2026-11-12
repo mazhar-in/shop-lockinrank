@@ -16,8 +16,8 @@ $rawDesc = !empty($pageDescription) ? html_entity_decode(strip_tags($pageDescrip
 $seoDescription = htmlspecialchars($rawDesc, ENT_QUOTES, 'UTF-8');
 
 // Canonical URL (automatically strips query parameters like ?board=CBSE or ?sort=popular)
-$currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-$cleanCanonical = !empty($canonicalUrl) ? $canonicalUrl : ($siteBaseUrl . ($currentPath === '/' ? '' : $currentPath));
+$currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+$cleanCanonical = !empty($canonicalUrl) ? $canonicalUrl : ($siteBaseUrl . ($currentPath === '/' ? '/' : rtrim($currentPath, '/')));
 
 // Robots Indexing Directive
 $isNoIndex = !empty($noIndex) 
@@ -25,7 +25,8 @@ $isNoIndex = !empty($noIndex)
     || str_starts_with($currentPath, '/cart') 
     || str_starts_with($currentPath, '/order') 
     || str_starts_with($currentPath, '/download') 
-    || str_starts_with($currentPath, '/seller');
+    || str_starts_with($currentPath, '/seller')
+    || str_starts_with($currentPath, '/search');
 
 // Social Sharing Assets
 $seoImage = !empty($ogImage) ? $ogImage : ($siteBaseUrl . '/images/lockinrank-logo.png');
@@ -178,7 +179,7 @@ $seoType = !empty($ogType) ? $ogType : 'website';
                 </span>
             </li>
             <li class="nav-link-desktop"><a href="/" class="nav-link"><i class="fa-solid fa-compass"></i> Store Catalog</a></li>
-            <li class="nav-link-desktop"><a href="/?price=free" class="nav-link" style="color: #10b981 !important;"><i class="fa-solid fa-gift"></i> 100% Freebies</a></li>
+            <li class="nav-link-desktop"><a href="/?price=free" rel="nofollow" class="nav-link" style="color: #10b981 !important;"><i class="fa-solid fa-gift"></i> 100% Freebies</a></li>
             <li class="nav-link-desktop"><a href="/contact" class="nav-link"><i class="fa-regular fa-envelope"></i> Support</a></li>
             <li>
                 <a href="/cart" id="nav-cart-btn" class="nav-cart-btn" title="View Shopping Cart (<?= $cartCount ?> items)">

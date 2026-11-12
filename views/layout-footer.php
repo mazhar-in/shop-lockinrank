@@ -15,7 +15,7 @@
             <i class="fa-solid fa-compass"></i>
             <span>Catalog</span>
         </a>
-        <a href="/?price=free" class="mobile-nav-item <?= (isset($_GET['price']) && $_GET['price'] === 'free') ? 'active' : '' ?>" style="color: #10b981;">
+        <a href="/?price=free" rel="nofollow" class="mobile-nav-item <?= (isset($_GET['price']) && $_GET['price'] === 'free') ? 'active' : '' ?>" style="color: #10b981;">
             <i class="fa-solid fa-gift"></i>
             <span>Freebies</span>
         </a>
@@ -75,10 +75,10 @@
                     </h5>
                     <ul style="list-style: none; padding-left: 0; font-size: 0.88rem; line-height: 2;">
                         <li><a href="/" style="color: #475569; text-decoration: none;">All Study Materials</a></li>
-                        <li><a href="/?class=JEE+Main+%26+Advanced" style="color: #475569; text-decoration: none;">JEE Main & Advanced</a></li>
-                        <li><a href="/?class=NEET+(Medical)" style="color: #475569; text-decoration: none;">NEET Medical Prep</a></li>
-                        <li><a href="/?class=AP+Physics+(College+Board)" style="color: #475569; text-decoration: none;">AP Physics 1 & C</a></li>
-                        <li><a href="/?price=free" style="color: #10b981; font-weight: 700; text-decoration: none;"><i class="fa-solid fa-gift"></i> 100% Free Resources</a></li>
+                        <li><a href="/?class=JEE+Main+%26+Advanced" rel="nofollow" style="color: #475569; text-decoration: none;">JEE Main & Advanced</a></li>
+                        <li><a href="/?class=NEET+(Medical)" rel="nofollow" style="color: #475569; text-decoration: none;">NEET Medical Prep</a></li>
+                        <li><a href="/?class=AP+Physics+(College+Board)" rel="nofollow" style="color: #475569; text-decoration: none;">AP Physics 1 & C</a></li>
+                        <li><a href="/?price=free" rel="nofollow" style="color: #10b981; font-weight: 700; text-decoration: none;"><i class="fa-solid fa-gift"></i> 100% Free Resources</a></li>
                         <li><a href="/cart" style="color: #475569; text-decoration: none;">Shopping Cart</a></li>
                     </ul>
                 </div>

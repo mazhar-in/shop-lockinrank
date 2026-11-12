@@ -124,8 +124,8 @@ $breadcrumbSchema = [
 <nav aria-label="breadcrumb" class="product-breadcrumbs" style="margin-bottom: 1.5rem; font-size: 0.85rem;">
     <ul>
         <li><a href="/">Home</a></li>
-        <li><a href="/?board=<?= urlencode($product['board'] ?? 'CBSE') ?>"><?= htmlspecialchars($product['board'] ?? 'CBSE') ?></a></li>
-        <li><a href="/?class=<?= urlencode($product['grade']) ?>"><?= htmlspecialchars($product['grade']) ?></a></li>
+        <li><a href="/?board=<?= urlencode($product['board'] ?? 'CBSE') ?>" rel="nofollow"><?= htmlspecialchars($product['board'] ?? 'CBSE') ?></a></li>
+        <li><a href="/?class=<?= urlencode($product['grade']) ?>" rel="nofollow"><?= htmlspecialchars($product['grade']) ?></a></li>
         <li class="breadcrumb-current" title="<?= htmlspecialchars($product['title']) ?>"><?= htmlspecialchars($product['title']) ?></li>
     </ul>
 </nav>
@@ -339,7 +339,7 @@ $breadcrumbSchema = [
                         <i class="fa-solid fa-tags" style="color: #4f46e5;"></i> Tags:
                     </span>
                     <?php foreach ($tagList as $t): ?>
-                        <a href="/?tag=<?= urlencode($t) ?>" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.15s ease;">
+                        <a href="/?tag=<?= urlencode($t) ?>" rel="nofollow" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.15s ease;">
                             #<?= htmlspecialchars($t) ?>
                         </a>
                     <?php endforeach; ?>
@@ -447,7 +447,7 @@ $breadcrumbSchema = [
                         <td>
                             <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
                                 <?php foreach (array_filter(array_map('trim', explode(',', $product['tags']))) as $t): ?>
-                                    <a href="/?tag=<?= urlencode($t) ?>" style="font-size: 0.75rem; background: #eef2ff; color: #4338ca; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-decoration: none; border: 1px solid #c7d2fe;">
+                                    <a href="/?tag=<?= urlencode($t) ?>" rel="nofollow" style="font-size: 0.75rem; background: #eef2ff; color: #4338ca; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-decoration: none; border: 1px solid #c7d2fe;">
                                         #<?= htmlspecialchars($t) ?>
                                     </a>
                                 <?php endforeach; ?>

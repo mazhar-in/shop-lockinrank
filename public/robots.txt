@@ -5,6 +5,17 @@ Disallow: /seller
 Disallow: /cart
 Disallow: /order/
 Disallow: /download/
+Disallow: /search
+Disallow: /*?q=
+Disallow: /*?sort=
+Disallow: /*?tag=
+Disallow: /*?board=
+Disallow: /*?class=
+Disallow: /*?price=
+Disallow: /*?subject=
+Disallow: /*?type=
+Disallow: /*?category=
+Disallow: /*?ink_friendly=
 
 User-agent: Googlebot
 Allow: /
